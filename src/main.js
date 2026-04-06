@@ -1,3 +1,7 @@
+import Prism from "prismjs";
+import "prismjs/components/prism-markup";
+import "prismjs/themes/prism-tomorrow.css";
+
 class TreeViewer {
   static VIRTUAL_ROOT_VALUE = "__virtual_root__";
 
@@ -551,7 +555,7 @@ class TreeViewer {
           </button>
         </div>
       </div>
-      <pre id="exampleXmlOutput" class="example-output">Load one or more XSD files to generate example XML.</pre>
+      <pre class="example-output"><code id="exampleXmlOutput" class="language-markup">Load one or more XSD files to generate example XML.</code></pre>
     `;
 
     this.container.parentNode.insertBefore(panel, this.container);
@@ -597,7 +601,7 @@ class TreeViewer {
     const rootName = select?.value;
 
     if (!rootName) {
-      this.renderExampleXml(TreeViewer.VIRTUAL_ROOT_VALUE);
+      this.renderExampleXml(rootName);
       return;
     }
 
@@ -616,7 +620,14 @@ class TreeViewer {
   renderExampleXml(content) {
     const output = document.getElementById("exampleXmlOutput");
     if (output) {
-      output.textContent = content || "Load one or more XSD files to generate example XML.";
+      const xml =
+        content || "Load one or more XSD files to generate example XML.";
+
+      if (content) {
+        output.innerHTML = Prism.highlight(xml, Prism.languages.markup, "markup");
+      } else {
+        output.textContent = xml;
+      }
     }
   }
 
@@ -1138,4 +1149,8 @@ document.getElementById("xsdFile").addEventListener("change", (event) => {
   if (files.length > 0) {
     viewer.parseXSDFiles(files);
   }
+});
+
+document.getElementById("rootElementSelect").addEventListener("change", (event) => {
+  viewer.handleGenerateExampleXml();
 });

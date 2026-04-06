@@ -400,12 +400,27 @@ input[type="file"]::-webkit-file-upload-button:hover {
   margin: 0;
   padding: 1.25rem;
   background: rgba(6, 13, 24, 0.94);
-  color: #d9e7ff;
-  border-radius: 12px;
   font-size: 0.9rem;
   line-height: 1.55;
   font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
   white-space: pre-wrap;
+  overflow: auto;
+}
+
+.example-output code {
+  display: block;
+  min-height: 1.55em;
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.example-output[class*="language-"],
+.example-output code[class*="language-"] {
+  background: transparent;
+  margin: 0;
+  padding: 0.5rem;
+  text-shadow: none;
 }
 
 .error-message {
