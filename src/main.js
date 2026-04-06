@@ -1,4 +1,6 @@
 class TreeViewer {
+  static VIRTUAL_ROOT_VALUE = "__virtual_root__";
+
   constructor(container) {
     this.container = container;
     this.loadedDocs = [];
@@ -96,6 +98,7 @@ class TreeViewer {
     } finally {
       this.hideLoading();
       this.toggleAll(true);
+      this.handleGenerateExampleXml();
     }
   }
 
@@ -543,9 +546,6 @@ class TreeViewer {
           <select id="rootElementSelect" class="example-select">
             <option value="">Choose root element</option>
           </select>
-          <button id="generateXml" class="control-btn" type="button">
-            Generate Example XML
-          </button>
           <button id="copyXml" class="control-btn" type="button">
             Copy XML
           </button>
@@ -555,10 +555,6 @@ class TreeViewer {
     `;
 
     this.container.parentNode.insertBefore(panel, this.container);
-
-    document.getElementById("generateXml").addEventListener("click", () => {
-      this.handleGenerateExampleXml();
-    });
 
     document.getElementById("copyXml").addEventListener("click", async () => {
       if (!this.exampleXml) {
@@ -584,7 +580,7 @@ class TreeViewer {
     );
 
     select.innerHTML = `
-      <option value="">Choose root element</option>
+      <option value="${TreeViewer.VIRTUAL_ROOT_VALUE}">Virtual root (all top-level elements)</option>
       ${rootNames
         .map((name) => `<option value="${name}">${name}</option>`)
         .join("")}
@@ -601,7 +597,7 @@ class TreeViewer {
     const rootName = select?.value;
 
     if (!rootName) {
-      this.renderExampleXml("Choose a root element to generate XML.");
+      this.renderExampleXml(TreeViewer.VIRTUAL_ROOT_VALUE);
       return;
     }
 
@@ -625,6 +621,10 @@ class TreeViewer {
   }
 
   generateExampleXml(rootElementName) {
+    if (rootElementName === TreeViewer.VIRTUAL_ROOT_VALUE) {
+      return this.generateVirtualRootXml();
+    }
+
     const rootDefinition = this.schemaModel.elements.get(rootElementName);
     if (!rootDefinition) {
       throw new Error(`Root element "${rootElementName}" was not found`);
@@ -642,6 +642,41 @@ class TreeViewer {
 
     lines.push(this.stringifyXmlNode(rootNode));
     return lines.join("\n");
+  }
+
+  generateVirtualRootXml() {
+    const topLevelElements = Array.from(this.schemaModel.elements.entries()).sort(
+      ([leftName], [rightName]) => leftName.localeCompare(rightName)
+    );
+
+    if (topLevelElements.length === 0) {
+      throw new Error("No top-level elements were found");
+    }
+
+    const virtualRoot = {
+      name: "Root",
+      attributes: {},
+      children: [],
+      text: "",
+    };
+
+    topLevelElements.forEach(([elementName, definition]) => {
+      const childNode = this.buildExampleNode(definition.element, {
+        depth: 1,
+        ancestors: new Set(["Root"]),
+      });
+
+      if (definition.targetNamespace) {
+        childNode.attributes.xmlns = definition.targetNamespace;
+      }
+
+      virtualRoot.children.push(childNode);
+    });
+
+    return [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      this.stringifyXmlNode(virtualRoot),
+    ].join("\n");
   }
 
   buildExampleNode(elementDefinition, context) {

@@ -37,7 +37,7 @@ body {
 header {
   background: rgba(8, 17, 31, 0.92);
   border-bottom: 1px solid var(--border);
-  padding: 0.25rem;
+  padding: 0.25rem 0.5rem;
   flex-shrink: 0;
   background-image: linear-gradient(rgba(53, 86, 124, 0.25) 1px, transparent 1px),
     linear-gradient(90deg, rgba(53, 86, 124, 0.25) 1px, transparent 1px);
@@ -347,7 +347,6 @@ input[type="file"]::-webkit-file-upload-button:hover {
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(15, 27, 45, 0.95), rgba(10, 20, 36, 0.92));
   box-shadow: var(--shadow);
-  overflow: hidden;
 }
 
 .example-panel-header {
@@ -400,10 +399,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .example-output {
   margin: 0;
   padding: 1.25rem;
-  max-height: 280px;
-  overflow: auto;
   background: rgba(6, 13, 24, 0.94);
   color: #d9e7ff;
+  border-radius: 12px;
   font-size: 0.9rem;
   line-height: 1.55;
   font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
