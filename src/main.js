@@ -146,6 +146,7 @@ class TreeViewer {
       console.error("Error parsing files:", error);
     } finally {
       this.hideLoading();
+      this.toggleAll(true);
     }
   }
 
