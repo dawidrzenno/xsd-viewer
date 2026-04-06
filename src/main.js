@@ -4,6 +4,8 @@ import "prismjs/themes/prism-tomorrow.css";
 
 class TreeViewer {
   static VIRTUAL_ROOT_VALUE = "__virtual_root__";
+  static CACHED_FILES_STORAGE_KEY = "xsd-viewer:cached-files";
+  static SELECTED_ROOT_STORAGE_KEY = "xsd-viewer:selected-root";
 
   constructor(container) {
     this.container = container;
@@ -14,6 +16,7 @@ class TreeViewer {
     this.addSearchBar();
     this.addControlButtons();
     this.addExampleXmlPanel();
+    this.addFileSelectionStatus();
   }
 
   createEmptySchemaModel() {
@@ -64,16 +67,82 @@ class TreeViewer {
     };
   }
 
+  async restoreCachedFiles() {
+    const cachedFiles = this.loadCachedFiles();
+    if (cachedFiles.length === 0) {
+      this.renderFileSelectionStatus([]);
+      return;
+    }
+
+    this.renderFileSelectionStatus(cachedFiles.map((file) => file.name));
+    await this.parseCachedXSDFiles(cachedFiles, false);
+  }
+
+  loadCachedFiles() {
+    try {
+      const raw = window.localStorage.getItem(TreeViewer.CACHED_FILES_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error("Could not load cached XSD files:", error);
+      return [];
+    }
+  }
+
+  saveCachedFiles(fileEntries) {
+    try {
+      window.localStorage.setItem(
+        TreeViewer.CACHED_FILES_STORAGE_KEY,
+        JSON.stringify(fileEntries)
+      );
+    } catch (error) {
+      console.error("Could not save cached XSD files:", error);
+    }
+  }
+
+  loadSelectedRoot() {
+    try {
+      return window.localStorage.getItem(TreeViewer.SELECTED_ROOT_STORAGE_KEY) || "";
+    } catch (error) {
+      console.error("Could not load selected root:", error);
+      return "";
+    }
+  }
+
+  saveSelectedRoot(rootName) {
+    try {
+      window.localStorage.setItem(TreeViewer.SELECTED_ROOT_STORAGE_KEY, rootName);
+    } catch (error) {
+      console.error("Could not save selected root:", error);
+    }
+  }
+
   async parseXSDFiles(files) {
+    const fileEntries = [];
+
+    for (const file of files) {
+      try {
+        fileEntries.push({
+          name: file.name,
+          text: await file.text(),
+        });
+      } catch (error) {
+        console.error(`Error reading file ${file.name}:`, error);
+      }
+    }
+
+    await this.parseCachedXSDFiles(fileEntries, true);
+  }
+
+  async parseCachedXSDFiles(fileEntries, persistToCache = true) {
     try {
       this.showLoading();
       const parser = new DOMParser();
       const xsdDocs = [];
 
-      for (const file of files) {
+      for (const file of fileEntries) {
         try {
-          const text = await file.text();
-          const doc = parser.parseFromString(text, "text/xml");
+          const doc = parser.parseFromString(file.text, "text/xml");
 
           if (doc.querySelector("parsererror")) {
             throw new Error(`Invalid XML in file: ${file.name}`);
@@ -89,8 +158,13 @@ class TreeViewer {
         throw new Error("No valid XSD files were loaded");
       }
 
+      if (persistToCache) {
+        this.saveCachedFiles(fileEntries);
+      }
+
       this.loadedDocs = xsdDocs;
       this.schemaModel = this.buildSchemaModel(xsdDocs);
+      this.renderFileSelectionStatus(fileEntries.map((file) => file.name));
 
       const processedData = this.processXSDDocs(xsdDocs);
       this.renderTree(processedData);
@@ -482,6 +556,36 @@ class TreeViewer {
     setTimeout(() => errorDiv.remove(), 5000);
   }
 
+  addFileSelectionStatus() {
+    const fileInputSection = document.querySelector(".file-input-section");
+    if (!fileInputSection || document.getElementById("fileSelectionStatus")) {
+      return;
+    }
+
+    const status = document.createElement("div");
+    status.id = "fileSelectionStatus";
+    status.className = "file-selection-status";
+    status.textContent = "No cached schema";
+    fileInputSection.appendChild(status);
+  }
+
+  renderFileSelectionStatus(fileNames) {
+    const status = document.getElementById("fileSelectionStatus");
+    if (!status) {
+      return;
+    }
+
+    if (!Array.isArray(fileNames) || fileNames.length === 0) {
+      status.textContent = "No cached schema";
+      return;
+    }
+
+    status.textContent =
+      fileNames.length === 1
+        ? `Cached: ${fileNames[0]}`
+        : `Cached: ${fileNames.join(", ")}`;
+  }
+
   addSearchBar() {
     const searchDiv = document.createElement("div");
     searchDiv.className = "search-container";
@@ -590,10 +694,21 @@ class TreeViewer {
         .join("")}
     `;
 
+    const savedRoot = this.loadSelectedRoot();
+    const availableValues = [TreeViewer.VIRTUAL_ROOT_VALUE, ...rootNames];
+    if (savedRoot && availableValues.includes(savedRoot)) {
+      select.value = savedRoot;
+      return;
+    }
+
     if (rootNames.length === 1) {
       select.value = rootNames[0];
-      this.handleGenerateExampleXml();
+      this.saveSelectedRoot(rootNames[0]);
+      return;
     }
+
+    select.value = TreeViewer.VIRTUAL_ROOT_VALUE;
+    this.saveSelectedRoot(TreeViewer.VIRTUAL_ROOT_VALUE);
   }
 
   handleGenerateExampleXml() {
@@ -606,6 +721,7 @@ class TreeViewer {
     }
 
     try {
+      this.saveSelectedRoot(rootName);
       const xml = this.generateExampleXml(rootName);
       this.exampleXml = xml;
       this.renderExampleXml(xml);
@@ -1154,3 +1270,5 @@ document.getElementById("xsdFile").addEventListener("change", (event) => {
 document.getElementById("rootElementSelect").addEventListener("change", (event) => {
   viewer.handleGenerateExampleXml();
 });
+
+viewer.restoreCachedFiles();
