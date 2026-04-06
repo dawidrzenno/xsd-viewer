@@ -1,111 +1,61 @@
-const sampleXSDData = `<?xml version="1.0" encoding="UTF-8"?>
-<!-- 
- * #%L
- * org.hl7.fhir.r5
- * %%
- * Copyright (C) 2014 - 2019 Health Level 7
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-/*
-  Copyright (c) 2011+, HL7, Inc.
-  All rights reserved.
-  
-  Redistribution and use in source and binary forms, with or without modification, 
-  are permitted provided that the following conditions are met:
-  
-   * Redistributions of source code must retain the above copyright notice, this 
-     list of conditions and the following disclaimer.
-   * Redistributions in binary form must reproduce the above copyright notice, 
-     this list of conditions and the following disclaimer in the documentation 
-     and/or other materials provided with the distribution.
-   * Neither the name of HL7 nor the names of its contributors may be used to 
-     endorse or promote products derived from this software without specific 
-     prior written permission.
-  
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 
-  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
-  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-  POSSIBILITY OF SUCH DAMAGE.
-  
-
-  Generated on Wed, Nov 27, 2024 19:21+0000 for FHIR v6.0.0-ballot2 
-
-  Note: the schemas &amp; schematrons do not contain all of the rules about what makes resources
-  valid. Implementers will still need to be familiar with the content of the specification and with
-  any profiles that apply to the resources in order to make a conformant implementation.
-
--->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://hl7.org/fhir" xmlns:xhtml="http://www.w3.org/1999/xhtml" targetNamespace="http://hl7.org/fhir" elementFormDefault="qualified" version="1.0">
-  <xs:include schemaLocation="fhir-base.xsd"/>
-  <xs:element name="Basic" type="Basic">
-    <xs:annotation>
-      <xs:documentation xml:lang="en">Basic is used for handling concepts not yet defined in FHIR, narrative-only resources that don't map to an existing resource, and custom resources not appropriate for inclusion in the FHIR specification.</xs:documentation>
-    </xs:annotation>
-  </xs:element>
-  <xs:complexType name="Basic">
-    <xs:annotation>
-      <xs:documentation xml:lang="en">Basic is used for handling concepts not yet defined in FHIR, narrative-only resources that don't map to an existing resource, and custom resources not appropriate for inclusion in the FHIR specification.</xs:documentation>
-      <xs:documentation xml:lang="en">If the element is present, it must have either a @value, an @id, or extensions</xs:documentation>
-    </xs:annotation>
-    <xs:complexContent>
-      <xs:extension base="DomainResource">
-        <xs:sequence>
-          <xs:element name="identifier" minOccurs="0" maxOccurs="unbounded" type="Identifier">
-            <xs:annotation>
-              <xs:documentation xml:lang="en">Identifier assigned to the resource for business purposes, outside the context of FHIR.</xs:documentation>
-           </xs:annotation>
-          </xs:element>
-          <xs:element name="code" minOccurs="1" maxOccurs="1" type="CodeableConcept">
-            <xs:annotation>
-              <xs:documentation xml:lang="en">Identifies the 'type' of resource - equivalent to the resource name for other resources.</xs:documentation>
-           </xs:annotation>
-          </xs:element>
-          <xs:element name="subject" minOccurs="0" maxOccurs="1" type="Reference">
-            <xs:annotation>
-              <xs:documentation xml:lang="en">Identifies the patient, practitioner, device or any other resource that is the &quot;focus&quot; of this resource.</xs:documentation>
-           </xs:annotation>
-          </xs:element>
-          <xs:element name="created" minOccurs="0" maxOccurs="1" type="dateTime">
-            <xs:annotation>
-              <xs:documentation xml:lang="en">Identifies when the resource was first created.</xs:documentation>
-           </xs:annotation>
-          </xs:element>
-          <xs:element name="author" minOccurs="0" maxOccurs="1" type="Reference">
-            <xs:annotation>
-              <xs:documentation xml:lang="en">Indicates who was responsible for creating the resource instance.</xs:documentation>
-           </xs:annotation>
-          </xs:element>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-</xs:schema>
-`;
-
 class TreeViewer {
   constructor(container) {
     this.container = container;
+    this.loadedDocs = [];
+    this.schemaModel = this.createEmptySchemaModel();
+    this.exampleXml = "";
+
     this.addSearchBar();
     this.addControlButtons();
+    this.addExampleXmlPanel();
+  }
+
+  createEmptySchemaModel() {
+    return {
+      docs: [],
+      elements: new Map(),
+      complexTypes: new Map(),
+      simpleTypes: new Map(),
+      namespaces: new Map(),
+      builtInTypes: new Set([
+        "anyuri",
+        "base64binary",
+        "boolean",
+        "byte",
+        "date",
+        "datetime",
+        "decimal",
+        "double",
+        "duration",
+        "float",
+        "gday",
+        "gmonth",
+        "gmonthday",
+        "gyear",
+        "gyearmonth",
+        "hexbinary",
+        "int",
+        "integer",
+        "long",
+        "name",
+        "ncname",
+        "negativeinteger",
+        "nmtoken",
+        "nonnegativeinteger",
+        "nonpositiveinteger",
+        "normalizedstring",
+        "positiveinteger",
+        "qname",
+        "short",
+        "string",
+        "time",
+        "token",
+        "unsignedbyte",
+        "unsignedint",
+        "unsignedlong",
+        "unsignedshort",
+      ]),
+    };
   }
 
   async parseXSDFiles(files) {
@@ -133,84 +83,74 @@ class TreeViewer {
         throw new Error("No valid XSD files were loaded");
       }
 
-      console.log("XSD Docs:", xsdDocs); // Debug log
+      this.loadedDocs = xsdDocs;
+      this.schemaModel = this.buildSchemaModel(xsdDocs);
+
       const processedData = this.processXSDDocs(xsdDocs);
-      console.log("Processed Data:", processedData); // Debug log
-
-      const stats = this.generateSchemaStats(processedData);
-      console.log("Generated Stats:", stats); // Debug log
-
-      this.generateSchemaStats(stats);
       this.renderTree(processedData);
+      this.renderExampleXml("");
+      this.populateRootSelector();
     } catch (error) {
       console.error("Error parsing files:", error);
+      this.showError(error.message || "Could not parse XSD files");
     } finally {
       this.hideLoading();
       this.toggleAll(true);
     }
   }
 
-  renderFileList(fileNames) {
-    const existingList = document.querySelector(".file-list");
-    if (existingList) {
-      existingList.remove();
+  buildSchemaModel(docs) {
+    const model = this.createEmptySchemaModel();
+    model.docs = docs;
+
+    for (const { doc, name } of docs) {
+      const schemaElement = doc.documentElement;
+      if (!schemaElement) {
+        continue;
+      }
+
+      const targetNamespace = schemaElement.getAttribute("targetNamespace") || "";
+      model.namespaces.set(name, targetNamespace);
+
+      this.getChildElements(schemaElement, "element").forEach((element) => {
+        const elementName = element.getAttribute("name");
+        if (elementName) {
+          model.elements.set(elementName, {
+            element,
+            fileName: name,
+            targetNamespace,
+          });
+        }
+      });
+
+      this.getDescendantsByLocalName(schemaElement, "complexType").forEach(
+        (typeElement) => {
+          const typeName = typeElement.getAttribute("name");
+          if (typeName) {
+            model.complexTypes.set(typeName, {
+              element: typeElement,
+              fileName: name,
+              targetNamespace,
+            });
+          }
+        }
+      );
+
+      this.getDescendantsByLocalName(schemaElement, "simpleType").forEach(
+        (typeElement) => {
+          const typeName = typeElement.getAttribute("name");
+          if (typeName) {
+            model.simpleTypes.set(typeName, {
+              element: typeElement,
+              fileName: name,
+              targetNamespace,
+            });
+          }
+        }
+      );
     }
 
-    const fileList = document.createElement("div");
-    fileList.className = "file-list";
-
-    fileList.innerHTML = `
-        <div class="file-list-header">Loaded Files:</div>
-        <div class="file-list-content">
-            ${fileNames
-              .map(
-                (name) => `
-                <div class="file-item">
-                    <span class="file-name">${name}</span>
-                </div>
-            `
-              )
-              .join("")}
-        </div>
-    `;
-
-    const header = document.querySelector("header");
-    header.querySelector(".header-content").appendChild(fileList);
-  }
-
-  showLoading() {
-    const loader = document.createElement("div");
-    loader.className = "loader";
-    loader.innerHTML = `
-        <div class="loader-content">
-            <div class="spinner"></div>
-            <div>Processing files...</div>
-        </div>
-    `;
-    document.body.appendChild(loader);
-  }
-
-  hideLoading() {
-    const loader = document.querySelector(".loader");
-    if (loader) loader.remove();
-  }
-
-  showError(message) {
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "error-message";
-    errorDiv.textContent = message;
-    this.container.prepend(errorDiv);
-
-    setTimeout(() => errorDiv.remove(), 5000);
-  }
-
-  showError(message) {
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "error-message";
-    errorDiv.textContent = message;
-    this.container.prepend(errorDiv);
-
-    setTimeout(() => errorDiv.remove(), 5000);
+    return model;
   }
 
   processXSDDocs(docs) {
@@ -230,52 +170,29 @@ class TreeViewer {
       types.push(...this.processSimpleTypes(doc, name));
       types.push(...this.processComplexTypes(doc, name));
       types.push(...this.processElements(doc, name));
-      types.push(...this.processComplexContent(doc, name));
     }
 
     return types;
   }
 
   processSimpleTypes(doc, fileName) {
-    const simpleTypes = [];
-    const simpleTypeElements = doc.querySelectorAll("simpleType");
-
-    for (const typeElement of simpleTypeElements) {
-      const typeData = this.processType(typeElement, "simpleType", fileName);
-      if (typeData) {
-        simpleTypes.push(typeData);
-      }
-    }
-
-    return simpleTypes;
+    return this.getDescendantsByLocalName(doc.documentElement, "simpleType")
+      .map((typeElement) => this.processType(typeElement, "simpleType", fileName))
+      .filter(Boolean);
   }
 
   processComplexTypes(doc, fileName) {
-    const complexTypes = [];
-    const complexTypeElements = doc.querySelectorAll("complexType");
-
-    for (const typeElement of complexTypeElements) {
-      const typeData = this.processType(typeElement, "complexType", fileName);
-      if (typeData) {
-        complexTypes.push(typeData);
-      }
-    }
-
-    return complexTypes;
+    return this.getDescendantsByLocalName(doc.documentElement, "complexType")
+      .map((typeElement) =>
+        this.processType(typeElement, "complexType", fileName)
+      )
+      .filter(Boolean);
   }
 
   processElements(doc, fileName) {
-    const elements = [];
-    const elementElements = doc.querySelectorAll("schema > element");
-
-    for (const elementElement of elementElements) {
-      const elementData = this.processType(elementElement, "element", fileName);
-      if (elementData) {
-        elements.push(elementData);
-      }
-    }
-
-    return elements;
+    return this.getChildElements(doc.documentElement, "element")
+      .map((elementElement) => this.processType(elementElement, "element", fileName))
+      .filter(Boolean);
   }
 
   processType(typeElement, typeKind, fileName) {
@@ -289,49 +206,28 @@ class TreeViewer {
     const restrictions = this.getRestrictions(typeElement);
     const attributes = this.getAttributes(typeElement);
 
-    // Process enumerations
-    const enums = typeElement.querySelectorAll("enumeration");
-    for (const enum_ of enums) {
+    this.getDescendantsByLocalName(typeElement, "enumeration").forEach((enum_) => {
       const value = enum_.getAttribute("value");
-      const enumDoc = this.getDocumentation(enum_);
+      if (!value) {
+        return;
+      }
+
       children.push({
         name: value,
         type: "enumeration",
-        documentation: enumDoc,
+        documentation: this.getDocumentation(enum_),
       });
-    }
+    });
 
-    // Process child elements
-    const elements = typeElement.querySelectorAll("element");
-    for (const element of elements) {
-      const elementName = element.getAttribute("name");
-      const elementType = element.getAttribute("type");
-      const elementDoc = this.getDocumentation(element);
-      const minOccurs = element.getAttribute("minOccurs");
-      const maxOccurs = element.getAttribute("maxOccurs");
-      children.push({
-        name: elementName,
-        type: elementType,
-        documentation: elementDoc,
-        minOccurs,
-        maxOccurs,
-      });
-    }
+    this.getNestedElementSummaries(typeElement).forEach((elementSummary) => {
+      children.push(elementSummary);
+    });
 
-    // Process complexContent
-    const complexContent = typeElement.querySelector("complexContent");
-    if (complexContent) {
-      const baseType = complexContent.getAttribute("base");
-      const extension = complexContent.querySelector("extension");
-      if (extension) {
-        const complexContentData = this.processComplexContentExtension(
-          extension,
-          baseType,
-          fileName
-        );
-        if (complexContentData) {
-          children.push(complexContentData);
-        }
+    const extension = this.getFirstDescendant(typeElement, "extension");
+    if (extension) {
+      const extensionData = this.processComplexContentExtension(extension, fileName);
+      if (extensionData) {
+        children.push(extensionData);
       }
     }
 
@@ -346,99 +242,75 @@ class TreeViewer {
     };
   }
 
-  processComplexContent(doc, fileName) {
-    const complexContentTypes = [];
-    const complexContentElements = doc.querySelectorAll(
-      "complexType > complexContent"
-    );
+  getNestedElementSummaries(root) {
+    const directContainers = ["sequence", "choice", "all", "complexType", "group"];
+    const summaries = [];
 
-    for (const contentElement of complexContentElements) {
-      const baseType = contentElement.getAttribute("base");
-      const extension = contentElement.querySelector("extension");
+    directContainers.forEach((tagName) => {
+      this.getChildElements(root, tagName).forEach((container) => {
+        this.getChildElements(container, "element").forEach((element) => {
+          const elementName = element.getAttribute("name") || element.getAttribute("ref");
+          if (!elementName) {
+            return;
+          }
 
-      if (extension) {
-        const typeData = this.processComplexContentExtension(
-          extension,
-          baseType,
-          fileName
-        );
-        if (typeData) {
-          complexContentTypes.push(typeData);
-        }
-      }
-    }
+          summaries.push({
+            name: this.stripNamespace(elementName),
+            type: element.getAttribute("type") || "element",
+            documentation: this.getDocumentation(element),
+            minOccurs: element.getAttribute("minOccurs"),
+            maxOccurs: element.getAttribute("maxOccurs"),
+          });
+        });
+      });
+    });
 
-    return complexContentTypes;
-  }
-
-  processComplexContentExtension(extensionElement, baseType, fileName) {
-    const name = extensionElement.getAttribute("base");
-    const sequenceElement = extensionElement.querySelector("sequence");
-    const children = this.processSequenceGroup(sequenceElement);
-
-    return {
-      name,
-      type: "complexContent",
-      baseType,
-      children,
-      fileName,
-    };
-  }
-
-  processSequenceGroup(sequenceElement) {
-    if (!sequenceElement) {
-      return [];
-    }
-
-    const children = [];
-    const elements = sequenceElement.querySelectorAll("element");
-
-    for (const element of elements) {
-      const elementData = this.processType(element, "element", null);
-      if (elementData) {
-        children.push(elementData);
-      }
-    }
-
-    return children;
+    return summaries;
   }
 
   getDocumentation(element) {
-    const docElement = element.querySelector("annotation > documentation");
-    return docElement ? docElement.textContent.trim() : "";
+    const annotation = this.getChildElements(element, "annotation")[0];
+    const documentation = annotation
+      ? this.getChildElements(annotation, "documentation")[0]
+      : null;
+    return documentation ? documentation.textContent.trim() : "";
   }
 
   getRestrictions(element) {
     const restrictions = {};
-    const restriction = element.querySelector("restriction");
-    if (restriction) {
-      restrictions.base = restriction.getAttribute("base");
-      [
-        "minLength",
-        "maxLength",
-        "pattern",
-        "minInclusive",
-        "maxInclusive",
-      ].forEach((attr) => {
-        const el = restriction.querySelector(attr);
-        if (el) {
-          restrictions[attr] = el.getAttribute("value");
-        }
-      });
+    const restriction = this.getFirstDescendant(element, "restriction");
+
+    if (!restriction) {
+      return null;
     }
+
+    const base = restriction.getAttribute("base");
+    if (base) {
+      restrictions.base = base;
+    }
+
+    ["minLength", "maxLength", "pattern", "minInclusive", "maxInclusive"].forEach(
+      (attr) => {
+        const restrictionNode = this.getChildElements(restriction, attr)[0];
+        if (restrictionNode) {
+          restrictions[attr] = restrictionNode.getAttribute("value");
+        }
+      }
+    );
+
     return Object.keys(restrictions).length ? restrictions : null;
   }
 
   getAttributes(element) {
-    const attributes = [];
-    element.querySelectorAll("attribute").forEach((attr) => {
-      attributes.push({
-        name: attr.getAttribute("name"),
+    const attributes = this.getDescendantsByLocalName(element, "attribute")
+      .map((attr) => ({
+        name: attr.getAttribute("name") || this.stripNamespace(attr.getAttribute("ref")),
         type: attr.getAttribute("type"),
         use: attr.getAttribute("use"),
         documentation: this.getDocumentation(attr),
-      });
-    });
+      }))
+      .filter((attr) => attr.name);
+
     return attributes.length ? attributes : null;
   }
 
@@ -455,8 +327,9 @@ class TreeViewer {
     if (node.children && node.children.length > 0) {
       const toggleBtn = document.createElement("button");
       toggleBtn.className = "toggle-btn";
-      toggleBtn.onclick = (e) => {
-        e.stopPropagation();
+      toggleBtn.type = "button";
+      toggleBtn.onclick = (event) => {
+        event.stopPropagation();
         toggleBtn.classList.toggle("open");
         childrenDiv.classList.toggle("hidden");
       };
@@ -475,7 +348,7 @@ class TreeViewer {
     if (node.type) {
       const typeSpan = document.createElement("span");
       typeSpan.className = "node-type";
-      typeSpan.textContent = `${node.type}`;
+      typeSpan.textContent = node.type;
       nameTypeDiv.appendChild(typeSpan);
     }
 
@@ -492,6 +365,15 @@ class TreeViewer {
       nodeInfo.appendChild(metadataDiv);
     }
 
+    if (node.attributes?.length) {
+      const attributesDiv = document.createElement("div");
+      attributesDiv.className = "metadata";
+      attributesDiv.textContent = `Attributes: ${node.attributes
+        .map((attr) => `${attr.name}${attr.use === "required" ? "*" : ""}`)
+        .join(", ")}`;
+      nodeInfo.appendChild(attributesDiv);
+    }
+
     contentDiv.appendChild(nodeInfo);
     nodeDiv.appendChild(contentDiv);
 
@@ -505,11 +387,9 @@ class TreeViewer {
     if (node.restrictions) {
       const restrictionsDiv = document.createElement("div");
       restrictionsDiv.className = "restrictions";
-      const restrictions = [];
-      for (const [key, value] of Object.entries(node.restrictions)) {
-        restrictions.push(`${key}: ${value}`);
-      }
-      restrictionsDiv.textContent = restrictions.join(" | ");
+      restrictionsDiv.textContent = Object.entries(node.restrictions)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(" | ");
       nodeDiv.appendChild(restrictionsDiv);
     }
 
@@ -523,11 +403,13 @@ class TreeViewer {
     return nodeDiv;
   }
 
-  generateSchemaStats(types) {
+  renderTree(types) {
     if (!Array.isArray(types)) {
-      console.error("Types is not an array:", types);
-      return [];
+      console.error("Expected array of types, got:", types);
+      return;
     }
+
+    this.container.innerHTML = "";
 
     const typesByFile = types.reduce((acc, type) => {
       const fileName = type.fileName || "Unknown File";
@@ -538,61 +420,16 @@ class TreeViewer {
       return acc;
     }, {});
 
-    return Object.entries(typesByFile).map(([fileName, fileTypes]) => {
-      const stats = {
-        totalTypes: fileTypes.length,
-        simpleTypes: 0,
-        complexTypes: 0,
-        elements: 0,
-        enumerations: 0,
-        totalAttributes: 0,
-        fileName,
-      };
-
-      fileTypes.forEach((type) => {
-        const nodeType = (type.type || "").toLowerCase();
-        switch (nodeType) {
-          case "simpletype":
-            stats.simpleTypes++;
-            break;
-          case "complextype":
-            stats.complexTypes++;
-            break;
-          case "element":
-            stats.elements++;
-            break;
-          case "enumeration":
-            stats.enumerations++;
-            break;
-        }
-
-        if (type.attributes) {
-          stats.totalAttributes += type.attributes.length;
-        }
-      });
-
-      return stats;
-    });
-  }
-
-  renderTree(stats) {
-    if (!Array.isArray(stats)) {
-      console.error("Expected array of stats, got:", stats);
-      return;
-    }
-
-    this.container.innerHTML = "";
-
-    stats.forEach((fileStats) => {
+    Object.entries(typesByFile).forEach(([fileName, fileTypes]) => {
       const fileSection = document.createElement("div");
       fileSection.className = "file-section";
 
       const fileHeader = document.createElement("div");
       fileHeader.className = "file-header";
-      fileHeader.textContent = `File: ${fileStats.fileName} (${fileStats.totalTypes} types)`;
+      fileHeader.textContent = `File: ${fileName} (${fileTypes.length} types)`;
       fileSection.appendChild(fileHeader);
 
-      fileStats.types.forEach((type) => {
+      fileTypes.forEach((type) => {
         fileSection.appendChild(this.createNodeElement(type));
       });
 
@@ -600,32 +437,70 @@ class TreeViewer {
     });
   }
 
+  showLoading() {
+    const existingLoader = document.querySelector(".loader");
+    if (existingLoader) {
+      existingLoader.remove();
+    }
+
+    const loader = document.createElement("div");
+    loader.className = "loader";
+    loader.innerHTML = `
+      <div class="loader-content">
+        <div class="spinner"></div>
+        <div>Processing files...</div>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  hideLoading() {
+    const loader = document.querySelector(".loader");
+    if (loader) {
+      loader.remove();
+    }
+  }
+
+  showError(message) {
+    const existingError = document.querySelector(".error-message");
+    if (existingError) {
+      existingError.remove();
+    }
+
+    const errorDiv = document.createElement("div");
+    errorDiv.className = "error-message";
+    errorDiv.textContent = message;
+    this.container.prepend(errorDiv);
+
+    setTimeout(() => errorDiv.remove(), 5000);
+  }
+
   addSearchBar() {
     const searchDiv = document.createElement("div");
     searchDiv.className = "search-container";
     searchDiv.innerHTML = `
-        <input type="text" 
-               id="schemaSearch" 
-               placeholder="Search schema..." 
-               class="search-input">
+      <input
+        type="text"
+        id="schemaSearch"
+        placeholder="Search schema..."
+        class="search-input"
+      >
     `;
 
     const header = document.querySelector("header");
     header.querySelector(".header-content").appendChild(searchDiv);
 
-    document.getElementById("schemaSearch").addEventListener("input", (e) => {
-      this.filterNodes(e.target.value.toLowerCase());
+    document.getElementById("schemaSearch").addEventListener("input", (event) => {
+      this.filterNodes(event.target.value.toLowerCase());
     });
   }
 
   filterNodes(searchTerm) {
     const allNodes = document.querySelectorAll(".tree-node");
+
     allNodes.forEach((node) => {
-      const nodeName = node
-        .querySelector(".node-name")
-        .textContent.toLowerCase();
-      const nodeType =
-        node.querySelector(".node-type")?.textContent.toLowerCase() || "";
+      const nodeName = node.querySelector(".node-name")?.textContent.toLowerCase() || "";
+      const nodeType = node.querySelector(".node-type")?.textContent.toLowerCase() || "";
       const documentation =
         node.querySelector(".documentation")?.textContent.toLowerCase() || "";
 
@@ -642,16 +517,504 @@ class TreeViewer {
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "control-buttons";
     buttonContainer.innerHTML = `
-        <button class="control-btn" id="expandAll">Expand All</button>
-        <button class="control-btn" id="collapseAll">Collapse All</button>
+      <button class="control-btn" id="expandAll" type="button">Expand All</button>
+      <button class="control-btn" id="collapseAll" type="button">Collapse All</button>
     `;
 
     const searchContainer = document.querySelector(".search-container");
     searchContainer.appendChild(buttonContainer);
 
     document.getElementById("expandAll").onclick = () => this.toggleAll(true);
-    document.getElementById("collapseAll").onclick = () =>
-      this.toggleAll(false);
+    document.getElementById("collapseAll").onclick = () => this.toggleAll(false);
+  }
+
+  addExampleXmlPanel() {
+    const panel = document.createElement("section");
+    panel.className = "example-panel";
+    panel.innerHTML = `
+      <div class="example-panel-header">
+        <div>
+          <div class="example-panel-title">Example XML Generator</div>
+          <div class="example-panel-subtitle">
+            Generate a minimal sample instance document from the loaded schema.
+          </div>
+        </div>
+        <div class="example-panel-controls">
+          <select id="rootElementSelect" class="example-select">
+            <option value="">Choose root element</option>
+          </select>
+          <button id="generateXml" class="control-btn" type="button">
+            Generate Example XML
+          </button>
+          <button id="copyXml" class="control-btn" type="button">
+            Copy XML
+          </button>
+        </div>
+      </div>
+      <pre id="exampleXmlOutput" class="example-output">Load one or more XSD files to generate example XML.</pre>
+    `;
+
+    this.container.parentNode.insertBefore(panel, this.container);
+
+    document.getElementById("generateXml").addEventListener("click", () => {
+      this.handleGenerateExampleXml();
+    });
+
+    document.getElementById("copyXml").addEventListener("click", async () => {
+      if (!this.exampleXml) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(this.exampleXml);
+      } catch (error) {
+        console.error("Could not copy XML:", error);
+      }
+    });
+  }
+
+  populateRootSelector() {
+    const select = document.getElementById("rootElementSelect");
+    if (!select) {
+      return;
+    }
+
+    const rootNames = Array.from(this.schemaModel.elements.keys()).sort((a, b) =>
+      a.localeCompare(b)
+    );
+
+    select.innerHTML = `
+      <option value="">Choose root element</option>
+      ${rootNames
+        .map((name) => `<option value="${name}">${name}</option>`)
+        .join("")}
+    `;
+
+    if (rootNames.length === 1) {
+      select.value = rootNames[0];
+      this.handleGenerateExampleXml();
+    }
+  }
+
+  handleGenerateExampleXml() {
+    const select = document.getElementById("rootElementSelect");
+    const rootName = select?.value;
+
+    if (!rootName) {
+      this.renderExampleXml("Choose a root element to generate XML.");
+      return;
+    }
+
+    try {
+      const xml = this.generateExampleXml(rootName);
+      this.exampleXml = xml;
+      this.renderExampleXml(xml);
+    } catch (error) {
+      console.error("Could not generate example XML:", error);
+      this.renderExampleXml(
+        `Could not generate example XML: ${error.message || "Unknown error"}`
+      );
+    }
+  }
+
+  renderExampleXml(content) {
+    const output = document.getElementById("exampleXmlOutput");
+    if (output) {
+      output.textContent = content || "Load one or more XSD files to generate example XML.";
+    }
+  }
+
+  generateExampleXml(rootElementName) {
+    const rootDefinition = this.schemaModel.elements.get(rootElementName);
+    if (!rootDefinition) {
+      throw new Error(`Root element "${rootElementName}" was not found`);
+    }
+
+    const lines = ['<?xml version="1.0" encoding="UTF-8"?>'];
+    const rootNode = this.buildExampleNode(rootDefinition.element, {
+      depth: 0,
+      ancestors: new Set(),
+    });
+
+    if (rootDefinition.targetNamespace) {
+      rootNode.attributes.xmlns = rootDefinition.targetNamespace;
+    }
+
+    lines.push(this.stringifyXmlNode(rootNode));
+    return lines.join("\n");
+  }
+
+  buildExampleNode(elementDefinition, context) {
+    const localName = elementDefinition.getAttribute("name");
+    const refName = this.stripNamespace(elementDefinition.getAttribute("ref"));
+    const explicitName = localName || refName;
+
+    if (!explicitName) {
+      throw new Error("Encountered an element without a usable name");
+    }
+
+    const node = {
+      name: explicitName,
+      attributes: {},
+      children: [],
+      text: "",
+    };
+
+    if (refName && !localName) {
+      const referenced = this.schemaModel.elements.get(refName);
+      if (referenced) {
+        return this.buildExampleNode(referenced.element, context);
+      }
+    }
+
+    this.applyAttributes(node, elementDefinition);
+
+    const inlineComplexType = this.getChildElements(elementDefinition, "complexType")[0];
+    const inlineSimpleType = this.getChildElements(elementDefinition, "simpleType")[0];
+    const typeName = this.stripNamespace(elementDefinition.getAttribute("type"));
+
+    if (inlineComplexType) {
+      this.applyComplexType(node, inlineComplexType, {
+        ...context,
+        ancestors: new Set([...context.ancestors, explicitName]),
+      });
+      return node;
+    }
+
+    if (inlineSimpleType) {
+      node.text = this.exampleValueForSimpleType(inlineSimpleType);
+      return node;
+    }
+
+    if (typeName) {
+      if (this.isBuiltInXsdType(typeName)) {
+        node.text = this.exampleValueForBuiltInType(typeName);
+        return node;
+      }
+
+      const complexType = this.schemaModel.complexTypes.get(typeName);
+      if (complexType) {
+        this.applyComplexType(node, complexType.element, {
+          ...context,
+          ancestors: new Set([...context.ancestors, explicitName, typeName]),
+        });
+        return node;
+      }
+
+      const simpleType = this.schemaModel.simpleTypes.get(typeName);
+      if (simpleType) {
+        node.text = this.exampleValueForSimpleType(simpleType.element);
+        return node;
+      }
+    }
+
+    const childElements = this.collectChildElementDefinitions(elementDefinition);
+    if (childElements.length) {
+      childElements.forEach((childElement) => {
+        const childName =
+          childElement.getAttribute("name") ||
+          this.stripNamespace(childElement.getAttribute("ref"));
+
+        if (!childName || context.ancestors.has(childName)) {
+          return;
+        }
+
+        node.children.push(
+          this.buildExampleNode(childElement, {
+            ...context,
+            depth: context.depth + 1,
+            ancestors: new Set([...context.ancestors, explicitName]),
+          })
+        );
+      });
+      return node;
+    }
+
+    node.text = this.exampleValueForBuiltInType("string");
+    return node;
+  }
+
+  applyComplexType(node, complexTypeElement, context) {
+    this.applyAttributes(node, complexTypeElement);
+
+    const complexContent = this.getChildElements(complexTypeElement, "complexContent")[0];
+    if (complexContent) {
+      const extension = this.getChildElements(complexContent, "extension")[0];
+      const restriction = this.getChildElements(complexContent, "restriction")[0];
+
+      if (extension) {
+        this.applyComplexTypeExtension(node, extension, context);
+        return;
+      }
+
+      if (restriction) {
+        this.applyComplexTypeExtension(node, restriction, context);
+        return;
+      }
+    }
+
+    const simpleContent = this.getChildElements(complexTypeElement, "simpleContent")[0];
+    if (simpleContent) {
+      const extension = this.getChildElements(simpleContent, "extension")[0];
+      const restriction = this.getChildElements(simpleContent, "restriction")[0];
+      const contentNode = extension || restriction;
+
+      if (contentNode) {
+        const baseType = this.stripNamespace(contentNode.getAttribute("base"));
+        if (baseType) {
+          node.text = this.resolveTypeExampleValue(baseType);
+        }
+        this.applyAttributes(node, contentNode);
+        return;
+      }
+    }
+
+    this.collectChildElementDefinitions(complexTypeElement).forEach((childElement) => {
+      const childName =
+        childElement.getAttribute("name") ||
+        this.stripNamespace(childElement.getAttribute("ref"));
+
+      if (!childName || context.ancestors.has(childName)) {
+        return;
+      }
+
+      node.children.push(
+        this.buildExampleNode(childElement, {
+          ...context,
+          depth: context.depth + 1,
+          ancestors: new Set([...context.ancestors, node.name]),
+        })
+      );
+    });
+
+    if (node.children.length === 0 && !node.text) {
+      const inlineSimpleType = this.getChildElements(complexTypeElement, "simpleType")[0];
+      if (inlineSimpleType) {
+        node.text = this.exampleValueForSimpleType(inlineSimpleType);
+      }
+    }
+  }
+
+  applyComplexTypeExtension(node, extensionElement, context) {
+    const baseType = this.stripNamespace(extensionElement.getAttribute("base"));
+    if (baseType && !context.ancestors.has(baseType)) {
+      const baseComplexType = this.schemaModel.complexTypes.get(baseType);
+      const baseSimpleType = this.schemaModel.simpleTypes.get(baseType);
+
+      if (baseComplexType) {
+        this.applyComplexType(node, baseComplexType.element, {
+          ...context,
+          ancestors: new Set([...context.ancestors, baseType]),
+        });
+      } else if (baseSimpleType) {
+        node.text = this.exampleValueForSimpleType(baseSimpleType.element);
+      } else if (this.isBuiltInXsdType(baseType)) {
+        node.text = this.exampleValueForBuiltInType(baseType);
+      }
+    }
+
+    this.applyAttributes(node, extensionElement);
+
+    this.collectChildElementDefinitions(extensionElement).forEach((childElement) => {
+      const childName =
+        childElement.getAttribute("name") ||
+        this.stripNamespace(childElement.getAttribute("ref"));
+
+      if (!childName || context.ancestors.has(childName)) {
+        return;
+      }
+
+      node.children.push(
+        this.buildExampleNode(childElement, {
+          ...context,
+          depth: context.depth + 1,
+          ancestors: new Set([...context.ancestors, node.name]),
+        })
+      );
+    });
+  }
+
+  applyAttributes(node, ownerElement) {
+    this.getDescendantsByLocalName(ownerElement, "attribute").forEach((attribute) => {
+      const use = attribute.getAttribute("use");
+      if (use && use !== "required") {
+        return;
+      }
+
+      const name =
+        attribute.getAttribute("name") ||
+        this.stripNamespace(attribute.getAttribute("ref"));
+
+      if (!name) {
+        return;
+      }
+
+      const inlineSimpleType = this.getChildElements(attribute, "simpleType")[0];
+      if (inlineSimpleType) {
+        node.attributes[name] = this.exampleValueForSimpleType(inlineSimpleType);
+        return;
+      }
+
+      const typeName = this.stripNamespace(attribute.getAttribute("type")) || "string";
+      node.attributes[name] = this.resolveTypeExampleValue(typeName);
+    });
+  }
+
+  collectChildElementDefinitions(ownerElement) {
+    const groups = ["sequence", "choice", "all"];
+    const childElements = [];
+
+    groups.forEach((groupName) => {
+      this.getChildElements(ownerElement, groupName).forEach((group) => {
+        const directElements = this.getChildElements(group, "element");
+        if (groupName === "choice" && directElements.length > 0) {
+          childElements.push(directElements[0]);
+        } else {
+          childElements.push(...directElements);
+        }
+      });
+    });
+
+    return childElements;
+  }
+
+  exampleValueForSimpleType(simpleTypeElement) {
+    const restriction = this.getChildElements(simpleTypeElement, "restriction")[0];
+    if (!restriction) {
+      return "value";
+    }
+
+    const enumerations = this.getChildElements(restriction, "enumeration")
+      .map((enumNode) => enumNode.getAttribute("value"))
+      .filter(Boolean);
+
+    if (enumerations.length > 0) {
+      return enumerations[0];
+    }
+
+    const baseType = this.stripNamespace(restriction.getAttribute("base")) || "string";
+    return this.exampleValueForBuiltInType(baseType, restriction);
+  }
+
+  resolveTypeExampleValue(typeName) {
+    if (this.isBuiltInXsdType(typeName)) {
+      return this.exampleValueForBuiltInType(typeName);
+    }
+
+    const simpleType = this.schemaModel.simpleTypes.get(typeName);
+    if (simpleType) {
+      return this.exampleValueForSimpleType(simpleType.element);
+    }
+
+    return "value";
+  }
+
+  exampleValueForBuiltInType(typeName, restrictionElement = null) {
+    const normalizedType = this.stripNamespace(typeName).toLowerCase();
+
+    if (restrictionElement) {
+      const minLength = this.getChildElements(restrictionElement, "minLength")[0];
+      if (minLength) {
+        const length = Number.parseInt(minLength.getAttribute("value"), 10);
+        if (Number.isFinite(length) && length > 0) {
+          return "x".repeat(length);
+        }
+      }
+    }
+
+    switch (normalizedType) {
+      case "boolean":
+        return "true";
+      case "byte":
+      case "decimal":
+      case "double":
+      case "float":
+      case "int":
+      case "integer":
+      case "long":
+      case "negativeinteger":
+      case "nonnegativeinteger":
+      case "nonpositiveinteger":
+      case "positiveinteger":
+      case "short":
+      case "unsignedbyte":
+      case "unsignedint":
+      case "unsignedlong":
+      case "unsignedshort":
+        return "1";
+      case "date":
+        return "2026-01-01";
+      case "datetime":
+        return "2026-01-01T00:00:00Z";
+      case "time":
+        return "12:00:00";
+      case "duration":
+        return "P1D";
+      case "anyuri":
+        return "https://example.com";
+      case "base64binary":
+        return "YQ==";
+      case "hexbinary":
+        return "0A";
+      case "gday":
+        return "---01";
+      case "gmonth":
+        return "--01";
+      case "gmonthday":
+        return "--01-01";
+      case "gyear":
+        return "2026";
+      case "gyearmonth":
+        return "2026-01";
+      case "qname":
+        return "exampleName";
+      default:
+        return "example";
+    }
+  }
+
+  isBuiltInXsdType(typeName) {
+    if (!typeName) {
+      return false;
+    }
+
+    const normalized = this.stripNamespace(typeName).toLowerCase();
+    const raw = typeName.toLowerCase();
+
+    if (raw.startsWith("xs:") || raw.startsWith("xsd:")) {
+      return true;
+    }
+
+    return this.schemaModel.builtInTypes.has(normalized);
+  }
+
+  stringifyXmlNode(node, depth = 0) {
+    const indent = "  ".repeat(depth);
+    const attributes = Object.entries(node.attributes)
+      .map(([name, value]) => ` ${name}="${this.escapeXml(value)}"`)
+      .join("");
+
+    if (node.children.length === 0 && !node.text) {
+      return `${indent}<${node.name}${attributes} />`;
+    }
+
+    if (node.children.length === 0) {
+      return `${indent}<${node.name}${attributes}>${this.escapeXml(
+        node.text
+      )}</${node.name}>`;
+    }
+
+    const children = node.children
+      .map((child) => this.stringifyXmlNode(child, depth + 1))
+      .join("\n");
+
+    if (node.text) {
+      return `${indent}<${node.name}${attributes}>${this.escapeXml(
+        node.text
+      )}\n${children}\n${indent}</${node.name}>`;
+    }
+
+    return `${indent}<${node.name}${attributes}>\n${children}\n${indent}</${node.name}>`;
   }
 
   toggleAll(expand) {
@@ -659,39 +1022,81 @@ class TreeViewer {
     const childrenDivs = document.querySelectorAll(".children");
 
     toggleButtons.forEach((btn) => {
-      if (expand) btn.classList.add("open");
-      else btn.classList.remove("open");
+      btn.classList.toggle("open", expand);
     });
 
     childrenDivs.forEach((div) => {
-      if (expand) div.classList.remove("hidden");
-      else div.classList.add("hidden");
+      div.classList.toggle("hidden", !expand);
     });
   }
 
-  renderTree(types) {
-    if (!Array.isArray(types)) {
-      console.error("Expected array of types, got:", types);
-      return;
+  stripNamespace(name) {
+    if (!name) {
+      return "";
     }
 
-    this.container.innerHTML = "";
+    const parts = name.split(":");
+    return parts[parts.length - 1];
+  }
 
-    types.forEach((type) => {
-      this.container.appendChild(this.createNodeElement(type));
-    });
+  getChildElements(parent, localName) {
+    if (!parent) {
+      return [];
+    }
+
+    return Array.from(parent.children || []).filter(
+      (child) => child.localName === localName
+    );
+  }
+
+  getDescendantsByLocalName(parent, localName) {
+    if (!parent) {
+      return [];
+    }
+
+    return Array.from(parent.getElementsByTagName("*")).filter(
+      (child) => child.localName === localName
+    );
+  }
+
+  getFirstDescendant(parent, localName) {
+    return this.getDescendantsByLocalName(parent, localName)[0] || null;
+  }
+
+  processComplexContentExtension(extensionElement, fileName) {
+    const name = this.stripNamespace(extensionElement.getAttribute("base"));
+    if (!name) {
+      return null;
+    }
+
+    return {
+      name,
+      type: "complexContent",
+      baseType: name,
+      children: this.collectChildElementDefinitions(extensionElement).map((element) => ({
+        name:
+          element.getAttribute("name") ||
+          this.stripNamespace(element.getAttribute("ref")),
+        type: element.getAttribute("type") || "element",
+        documentation: this.getDocumentation(element),
+        minOccurs: element.getAttribute("minOccurs"),
+        maxOccurs: element.getAttribute("maxOccurs"),
+      })),
+      fileName,
+    };
+  }
+
+  escapeXml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&apos;");
   }
 }
 
 const viewer = new TreeViewer(document.getElementById("treeViewer"));
-
-const sampleXSDFile = new File([sampleXSDData], "sample.xsd", {
-  type: "application/xml",
-});
-
-document.getElementById("loadSampleData").addEventListener("click", () => {
-  viewer.parseXSDFiles([sampleXSDFile]);
-});
 
 document.getElementById("xsdFile").addEventListener("change", (event) => {
   const files = event.target.files;
