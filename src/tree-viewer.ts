@@ -23,6 +23,7 @@ export class TreeViewer {
     this.addSearchBar();
     this.addControlButtons();
     this.addExampleXmlPanel();
+    this.addXmlCheatsheetPanel();
     this.addFileSelectionStatus();
   }
 
@@ -335,6 +336,186 @@ export class TreeViewer {
       } catch (error) {
         console.error("Could not copy XML:", error);
       }
+    });
+  }
+
+  private addXmlCheatsheetPanel(): void {
+    const panel = document.createElement("section");
+    panel.className = "cheatsheet-panel";
+    panel.innerHTML = `
+      <div class="cheatsheet-header">
+        <div class="cheatsheet-title">XML Handbook</div>
+        <div class="cheatsheet-subtitle">
+          Practical reference for reading, editing, and validating XML documents.
+        </div>
+      </div>
+      <div class="cheatsheet-sections">
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Document Structure</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">XML Declaration</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</code></pre>
+              <div class="cheatsheet-note">Optional but common first line. It declares XML version and encoding.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Root Element</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;invoice&gt;
+  &lt;number&gt;INV-1&lt;/number&gt;
+&lt;/invoice&gt;</code></pre>
+              <div class="cheatsheet-note">Every XML document must have exactly one root element containing everything else.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Simple Element</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;customer&gt;Alice&lt;/customer&gt;</code></pre>
+              <div class="cheatsheet-note">A standard element with text content between the opening and closing tags.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Attributes</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;customer id="123" active="true"&gt;Alice&lt;/customer&gt;</code></pre>
+              <div class="cheatsheet-note">Attributes belong in the opening tag. They are often used for identifiers, flags, and metadata.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Nested Elements</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;order&gt;
+  &lt;id&gt;42&lt;/id&gt;
+  &lt;customer&gt;
+    &lt;name&gt;Alice&lt;/name&gt;
+  &lt;/customer&gt;
+&lt;/order&gt;</code></pre>
+              <div class="cheatsheet-note">Elements can contain child elements, which form the document tree.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Repeated Siblings</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;items&gt;
+  &lt;item&gt;Coffee&lt;/item&gt;
+  &lt;item&gt;Tea&lt;/item&gt;
+  &lt;item&gt;Water&lt;/item&gt;
+&lt;/items&gt;</code></pre>
+              <div class="cheatsheet-note">Schemas often allow repeated sibling elements with <code>maxOccurs</code>.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Empty Element</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;attachment /&gt;</code></pre>
+              <div class="cheatsheet-note">Use self-closing syntax when the element has no text or children.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Namespaces And Metadata</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Default Namespace</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;invoice xmlns="urn:example:invoice"&gt;
+  &lt;number&gt;INV-1&lt;/number&gt;
+&lt;/invoice&gt;</code></pre>
+              <div class="cheatsheet-note"><code>xmlns</code> declares the default namespace for the current element and its descendants.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Prefixed Namespace</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;doc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:example invoice.xsd"&gt;
+  &lt;title&gt;Example&lt;/title&gt;
+&lt;/doc&gt;</code></pre>
+              <div class="cheatsheet-note">Prefixes are commonly used for <code>xsi</code> attributes and mixed vocabularies.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Comment</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;!-- Internal note: generated from test schema --&gt;</code></pre>
+              <div class="cheatsheet-note">Comments are allowed almost anywhere, but the text cannot contain <code>--</code>.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Processing Instruction</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;?xml-stylesheet type="text/xsl" href="view.xsl"?&gt;</code></pre>
+              <div class="cheatsheet-note">Processing instructions pass directives to tools, not to the schema itself.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Text And Content Rules</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Escaping Text</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;text&gt;Tom &amp;amp; Jerry &amp;lt;3&lt;/text&gt;</code></pre>
+              <div class="cheatsheet-note">Escape special characters like <code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code> inside text.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">CDATA Section</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;script&gt;&lt;![CDATA[
+if (a &lt; b) {
+  console.log("raw content");
+}
+]]&gt;&lt;/script&gt;</code></pre>
+              <div class="cheatsheet-note">CDATA keeps content unescaped, except that the sequence <code>]]&gt;</code> cannot appear inside it.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Mixed Content</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;paragraph&gt;
+  Use &lt;emphasis&gt;strong&lt;/emphasis&gt; formatting.
+&lt;/paragraph&gt;</code></pre>
+              <div class="cheatsheet-note">Text and child elements can coexist when the schema allows mixed content.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Common Scalar Values</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;flag&gt;true&lt;/flag&gt;
+&lt;count&gt;3&lt;/count&gt;
+&lt;date&gt;2026-04-07&lt;/date&gt;
+&lt;timestamp&gt;2026-04-07T12:00:00Z&lt;/timestamp&gt;</code></pre>
+              <div class="cheatsheet-note">Typical XSD scalar formats include booleans, numbers, ISO dates, and datetimes.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Validation And XSD Habits</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Order Matters</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;person&gt;
+  &lt;firstName&gt;Alice&lt;/firstName&gt;
+  &lt;lastName&gt;Nguyen&lt;/lastName&gt;
+&lt;/person&gt;</code></pre>
+              <div class="cheatsheet-note">In many XSD sequences, element order must match the schema exactly.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Optional vs Required</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;user role="admin"&gt;
+  &lt;name&gt;Alice&lt;/name&gt;
+  &lt;email&gt;alice@example.com&lt;/email&gt;
+&lt;/user&gt;</code></pre>
+              <div class="cheatsheet-note">Required attributes and elements must be present. Optional ones depend on schema constraints.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Validation Mindset</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;invoice status="draft"&gt;
+  &lt;number&gt;INV-1&lt;/number&gt;
+&lt;/invoice&gt;</code></pre>
+              <div class="cheatsheet-note">To satisfy an XSD, watch element names, order, cardinality, namespaces, and attribute requirements together.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+
+    this.container.parentNode?.insertBefore(panel, this.container);
+    panel
+      .querySelectorAll<HTMLElement>('code[class*="language-"]')
+      .forEach((element) => Prism.highlightElement(element));
+    this.sortCheatsheetCardsByHeight(panel);
+  }
+
+  private sortCheatsheetCardsByHeight(panel: HTMLElement): void {
+    const sortCards = () => {
+      panel.querySelectorAll<HTMLElement>(".cheatsheet-grid").forEach((grid) => {
+        const cards = Array.from(grid.querySelectorAll<HTMLElement>(".cheatsheet-card"));
+        cards
+          .sort((left, right) => left.offsetHeight - right.offsetHeight)
+          .forEach((card) => grid.appendChild(card));
+      });
+    };
+
+    window.requestAnimationFrame(() => {
+      sortCards();
+      window.requestAnimationFrame(sortCards);
     });
   }
 

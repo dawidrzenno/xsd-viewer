@@ -363,6 +363,105 @@ input[type="file"]::-webkit-file-upload-button:hover {
   box-shadow: var(--shadow);
 }
 
+.cheatsheet-panel {
+  margin: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top right, rgba(115, 180, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(15, 27, 45, 0.95), rgba(10, 20, 36, 0.92));
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  max-width: 2200px;
+}
+
+.cheatsheet-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(115, 180, 255, 0.1), transparent 40%),
+    var(--bg-panel-2);
+  text-align: left;
+}
+
+.cheatsheet-title {
+  font-size: 1.25rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.cheatsheet-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.cheatsheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+  gap: 1rem;
+}
+
+.cheatsheet-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 1.25rem 1.75rem;
+}
+
+.cheatsheet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cheatsheet-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 1rem;
+}
+
+.cheatsheet-section .cheatsheet-grid {
+  margin-top: 0.75rem;
+}
+
+.cheatsheet-card {
+  border: 1px solid rgba(39, 66, 97, 0.6);
+  border-radius: 10px;
+  background: rgba(11, 22, 38, 0.85);
+  padding: 1rem;
+}
+
+.cheatsheet-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  margin-bottom: 0.6rem;
+}
+
+.cheatsheet-code {
+  margin: 0;
+  padding: 0.95rem 1rem;
+  border-radius: 8px;
+  background: rgba(6, 13, 24, 0.94);
+  overflow: auto;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.cheatsheet-code code {
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+  white-space: pre;
+}
+
+.cheatsheet-note {
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
 .example-panel-header {
   display: flex;
   align-items: flex-start;
@@ -430,7 +529,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 
 .example-output[class*="language-"],
-.example-output code[class*="language-"] {
+.example-output code[class*="language-"],
+.cheatsheet-code[class*="language-"],
+.cheatsheet-code code[class*="language-"] {
   background: transparent;
   margin: 0;
   padding: 0.5rem;
