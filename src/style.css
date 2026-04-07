@@ -420,7 +420,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
-  padding: 1rem;
+  padding: 0.5rem 1rem;
 }
 
 .cheatsheet-section .cheatsheet-grid {

@@ -10,11 +10,10 @@ import {
   saveSelectedRoot,
 } from "./storage";
 import { generateExampleXml } from "./xml-generator";
-import type { CachedFileEntry, LoadedXsdDoc, ProcessedNode, SchemaModel } from "./types";
+import type { CachedFileEntry, ProcessedNode, SchemaModel } from "./types";
 
 export class TreeViewer {
   private readonly container: HTMLElement;
-  private loadedDocs: LoadedXsdDoc[] = [];
   private schemaModel: SchemaModel = buildSchemaModel([]);
   private exampleXml = "";
 
@@ -24,6 +23,7 @@ export class TreeViewer {
     this.addControlButtons();
     this.addExampleXmlPanel();
     this.addXmlCheatsheetPanel();
+    this.addXsdCheatsheetPanel();
     this.addFileSelectionStatus();
   }
 
@@ -55,7 +55,6 @@ export class TreeViewer {
         saveCachedFiles(fileEntries);
       }
 
-      this.loadedDocs = xsdDocs;
       this.schemaModel = buildSchemaModel(xsdDocs);
       this.renderFileSelectionStatus(fileEntries.map((file) => file.name));
 
@@ -490,6 +489,169 @@ if (a &lt; b) {
   &lt;number&gt;INV-1&lt;/number&gt;
 &lt;/invoice&gt;</code></pre>
               <div class="cheatsheet-note">To satisfy an XSD, watch element names, order, cardinality, namespaces, and attribute requirements together.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+
+    this.container.parentNode?.insertBefore(panel, this.container);
+    panel
+      .querySelectorAll<HTMLElement>('code[class*="language-"]')
+      .forEach((element) => Prism.highlightElement(element));
+    this.sortCheatsheetCardsByHeight(panel);
+  }
+
+  private addXsdCheatsheetPanel(): void {
+    const panel = document.createElement("section");
+    panel.className = "cheatsheet-panel";
+    panel.innerHTML = `
+      <div class="cheatsheet-header">
+        <div class="cheatsheet-title">XSD Handbook</div>
+        <div class="cheatsheet-subtitle">
+          Practical reference for defining schemas, constraints, and reusable types.
+        </div>
+      </div>
+      <div class="cheatsheet-sections">
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Schema Structure</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Schema Root</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"&gt;
+  ...
+&lt;/xs:schema&gt;</code></pre>
+              <div class="cheatsheet-note">Every XSD starts with <code>xs:schema</code> and usually declares the XML Schema namespace.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Target Namespace</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="urn:example:invoice"
+  elementFormDefault="qualified"&gt;
+  ...
+&lt;/xs:schema&gt;</code></pre>
+              <div class="cheatsheet-note">Use <code>targetNamespace</code> to define the schema’s vocabulary and <code>elementFormDefault</code> to control qualification.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Top-Level Element</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:element name="invoice" type="InvoiceType" /&gt;</code></pre>
+              <div class="cheatsheet-note">Global elements are common document entry points and can be referenced elsewhere.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Types And Constraints</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Complex Type</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:complexType name="InvoiceType"&gt;
+  &lt;xs:sequence&gt;
+    &lt;xs:element name="number" type="xs:string" /&gt;
+    &lt;xs:element name="total" type="xs:decimal" /&gt;
+  &lt;/xs:sequence&gt;
+&lt;/xs:complexType&gt;</code></pre>
+              <div class="cheatsheet-note">Use complex types for elements that contain child elements or attributes.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Simple Type Restriction</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:simpleType name="StatusType"&gt;
+  &lt;xs:restriction base="xs:string"&gt;
+    &lt;xs:enumeration value="draft" /&gt;
+    &lt;xs:enumeration value="final" /&gt;
+  &lt;/xs:restriction&gt;
+&lt;/xs:simpleType&gt;</code></pre>
+              <div class="cheatsheet-note">Restrictions narrow base types by enumeration, pattern, numeric bounds, length, and more.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Attribute Declaration</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:attribute name="currency" type="xs:string" use="required" /&gt;</code></pre>
+              <div class="cheatsheet-note">Attributes can be optional or required. Use them for metadata rather than nested structure.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Pattern Constraint</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:simpleType name="CodeType"&gt;
+  &lt;xs:restriction base="xs:string"&gt;
+    &lt;xs:pattern value="[A-Z]{3}-[0-9]{2}" /&gt;
+  &lt;/xs:restriction&gt;
+&lt;/xs:simpleType&gt;</code></pre>
+              <div class="cheatsheet-note">Patterns apply regular-expression-like matching to textual values.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Composition And Reuse</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Sequence</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:sequence&gt;
+  &lt;xs:element name="firstName" type="xs:string" /&gt;
+  &lt;xs:element name="lastName" type="xs:string" /&gt;
+&lt;/xs:sequence&gt;</code></pre>
+              <div class="cheatsheet-note">A sequence enforces element order exactly as declared.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Choice</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:choice&gt;
+  &lt;xs:element name="email" type="xs:string" /&gt;
+  &lt;xs:element name="phone" type="xs:string" /&gt;
+&lt;/xs:choice&gt;</code></pre>
+              <div class="cheatsheet-note">A choice means only one of the alternatives is expected unless occurrence rules say otherwise.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Occurrences</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:element
+  name="item"
+  type="ItemType"
+  minOccurs="0"
+  maxOccurs="unbounded" /&gt;</code></pre>
+              <div class="cheatsheet-note">Use <code>minOccurs</code> and <code>maxOccurs</code> to express optional, required, and repeating content.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Extension</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:complexContent&gt;
+  &lt;xs:extension base="BasePartyType"&gt;
+    &lt;xs:sequence&gt;
+      &lt;xs:element name="taxId" type="xs:string" /&gt;
+    &lt;/xs:sequence&gt;
+  &lt;/xs:extension&gt;
+&lt;/xs:complexContent&gt;</code></pre>
+              <div class="cheatsheet-note">Extensions let one type inherit another and add more content.</div>
+            </div>
+          </div>
+        </section>
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">Validation And Design Habits</div>
+          <div class="cheatsheet-grid">
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Reference Vs Inline</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:element ref="common:address" /&gt;
+
+&lt;xs:element name="address"&gt;
+  &lt;xs:complexType&gt;...&lt;/xs:complexType&gt;
+&lt;/xs:element&gt;</code></pre>
+              <div class="cheatsheet-note">Use global reusable definitions when many elements share the same shape.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Required Thinking</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:element name="id" type="xs:string" /&gt;
+&lt;xs:attribute name="status" type="StatusType" use="required" /&gt;</code></pre>
+              <div class="cheatsheet-note">Ask which parts are mandatory, repeatable, ordered, namespaced, and constrained before writing example XML.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Documentation</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:annotation&gt;
+  &lt;xs:documentation&gt;
+    Human-readable guidance for schema users.
+  &lt;/xs:documentation&gt;
+&lt;/xs:annotation&gt;</code></pre>
+              <div class="cheatsheet-note">Annotations make large schemas much easier to understand and maintain.</div>
+            </div>
+            <div class="cheatsheet-card">
+              <div class="cheatsheet-card-title">Validation Mindset</div>
+              <pre class="cheatsheet-code"><code class="language-markup">&lt;xs:element name="invoice" type="InvoiceType" /&gt;
+&lt;xs:complexType name="InvoiceType"&gt;...&lt;/xs:complexType&gt;</code></pre>
+              <div class="cheatsheet-note">To validate successfully, align names, order, cardinality, namespaces, base types, and restrictions together.</div>
             </div>
           </div>
         </section>
