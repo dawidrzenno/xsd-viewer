@@ -26,7 +26,6 @@ export class SchemaTreeComponent implements OnInit {
   @Output() readonly fileRemove = new EventEmitter<string>();
 
   protected readonly collapsedFiles = signal<Record<string, boolean>>({});
-  protected readonly fileSearchTerms = signal<Record<string, string>>({});
   protected readonly fileExpandStates = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {
@@ -48,17 +47,6 @@ export class SchemaTreeComponent implements OnInit {
 
   protected onFileRemove(fileName: string): void {
     this.fileRemove.emit(fileName);
-  }
-
-  protected getFileSearchTerm(fileName: string): string {
-    return this.fileSearchTerms()[fileName] ?? '';
-  }
-
-  protected onSearchInput(fileName: string, term: string): void {
-    this.fileSearchTerms.set({
-      ...this.fileSearchTerms(),
-      [fileName]: term,
-    });
   }
 
   protected isFileExpanded(fileName: string): boolean {

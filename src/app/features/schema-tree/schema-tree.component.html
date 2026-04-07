@@ -13,13 +13,21 @@
         <div class="file-header-main">
           <div class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
 
-          <button
-            class="file-remove-btn"
-            type="button"
-            (click)="onFileRemove(group.fileName); $event.stopPropagation()"
-          >
-            Remove
-          </button>
+          <div class="file-header-actions" (click)="$event.stopPropagation()">
+            <button class="tree-toolbar-btn" type="button" (click)="onExpandAll(group.fileName)">
+              Expand All
+            </button>
+            <button class="tree-toolbar-btn" type="button" (click)="onCollapseAll(group.fileName)">
+              Collapse All
+            </button>
+            <button
+              class="file-remove-btn file-remove-btn-separated"
+              type="button"
+              (click)="onFileRemove(group.fileName)"
+            >
+              Remove
+            </button>
+          </div>
         </div>
 
         <div class="file-header-subtitle">
@@ -80,25 +88,6 @@
           }
         }
 
-        <div class="file-header-toolbar" (click)="$event.stopPropagation()">
-          <input
-            #searchInput
-            type="text"
-            class="tree-search-input"
-            placeholder="Search this file..."
-            [value]="getFileSearchTerm(group.fileName)"
-            (input)="onSearchInput(group.fileName, searchInput.value)"
-          />
-
-          <div class="tree-toolbar-actions">
-            <button class="tree-toolbar-btn" type="button" (click)="onExpandAll(group.fileName)">
-              Expand All
-            </button>
-            <button class="tree-toolbar-btn" type="button" (click)="onCollapseAll(group.fileName)">
-              Collapse All
-            </button>
-          </div>
-        </div>
       </div>
 
       <div class="file-body" [class.collapsed]="isFileCollapsed(group.fileName)">
@@ -106,7 +95,7 @@
           @for (node of group.nodes; track node.name + '-' + $index) {
             <app-schema-tree-node
               [node]="node"
-              [searchTerm]="getFileSearchTerm(group.fileName)"
+              searchTerm=""
               [expandAll]="isFileExpanded(group.fileName)"
               [depth]="0"
             />

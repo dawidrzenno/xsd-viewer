@@ -54,7 +54,6 @@ interface SchemaFileGroup {
   styleUrl: './app.scss',
 })
 export class App {
-  protected readonly searchTerm = signal('');
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
   protected readonly cachedFiles = signal<CachedFileEntry[]>([]);
@@ -145,10 +144,6 @@ export class App {
     await this.applySelection();
 
     input.value = '';
-  }
-
-  protected onSearchInput(term: string): void {
-    this.searchTerm.set(term);
   }
 
   protected onExpandAll(): void {
