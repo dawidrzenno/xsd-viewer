@@ -9,19 +9,16 @@ import {
 } from '../schema';
 import {
   loadCachedFiles,
-  loadExampleXmlCommentOptions,
   loadExampleXmlGenerationMode,
   loadSelectedRoot,
   loadSelectedRootFile,
   saveCachedFiles,
-  saveExampleXmlCommentOptions,
   saveExampleXmlGenerationMode,
   saveSelectedRoot,
   saveSelectedRootFile,
 } from '../storage';
 import type {
   CachedFileEntry,
-  ExampleXmlCommentOptions,
   ExampleXmlFileOption,
   ExampleXmlGenerationMode,
   ProcessedNode,
@@ -52,16 +49,6 @@ interface SchemaFileGroup {
   styleUrl: './app.scss',
 })
 export class App {
-  private readonly defaultCommentOptions: ExampleXmlCommentOptions = {
-    elementNames: true,
-    documentation: true,
-    occurrences: true,
-    declaredTypes: true,
-    resolvedTypes: true,
-    attributes: true,
-    restrictions: true,
-  };
-
   protected readonly searchTerm = signal('');
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
@@ -77,9 +64,6 @@ export class App {
     loadExampleXmlGenerationMode(),
   );
   protected readonly expandAll = signal(true);
-  protected readonly commentOptions = signal<ExampleXmlCommentOptions>(
-    loadExampleXmlCommentOptions(this.defaultCommentOptions),
-  );
 
   protected readonly rootFileOptions = computed<ExampleXmlFileOption[]>(() =>
     this.cachedFileNames()
@@ -188,34 +172,6 @@ export class App {
   protected onExampleXmlGenerationModeChange(mode: ExampleXmlGenerationMode): void {
     this.exampleXmlGenerationMode.set(mode);
     saveExampleXmlGenerationMode(mode);
-    this.generateExampleXmlForRoot(this.selectedRoot());
-  }
-
-  protected onCommentOptionChange(change: {
-    key: keyof ExampleXmlCommentOptions;
-    checked: boolean;
-  }): void {
-    const nextOptions = {
-      ...this.commentOptions(),
-      [change.key]: change.checked,
-    };
-    this.commentOptions.set(nextOptions);
-    saveExampleXmlCommentOptions(nextOptions);
-    this.generateExampleXmlForRoot(this.selectedRoot());
-  }
-
-  protected onCommentOptionsBulkChange(checked: boolean): void {
-    const nextOptions: ExampleXmlCommentOptions = {
-      elementNames: checked,
-      documentation: checked,
-      occurrences: checked,
-      declaredTypes: checked,
-      resolvedTypes: checked,
-      attributes: checked,
-      restrictions: checked,
-    };
-    this.commentOptions.set(nextOptions);
-    saveExampleXmlCommentOptions(nextOptions);
     this.generateExampleXmlForRoot(this.selectedRoot());
   }
 
@@ -377,7 +333,6 @@ export class App {
         generateExampleXml(
           rootName,
           this.schemaModel(),
-          this.commentOptions(),
           this.selectedRootFile(),
           this.exampleXmlGenerationMode(),
         ),

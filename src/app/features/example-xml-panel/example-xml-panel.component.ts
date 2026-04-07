@@ -12,10 +12,8 @@ import {
   signal,
 } from '@angular/core';
 import { ALL_NODES_VALUE } from '../../../constants';
-import { XmlCommentOverlayDirective } from '../../shared/directives/xml-comment-overlay.directive';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 import type {
-  ExampleXmlCommentOptions,
   ExampleXmlFileOption,
   ExampleXmlGenerationMode,
 } from '../../../types';
@@ -34,18 +32,10 @@ interface GenerationModeOption {
   label: string;
 }
 
-interface CommentOptionGroup {
-  title: string;
-  options: Array<{
-    key: keyof ExampleXmlCommentOptions;
-    label: string;
-  }>;
-}
-
 @Component({
   selector: 'app-example-xml-panel',
   standalone: true,
-  imports: [CommonModule, PrismHighlightPipe, XmlCommentOverlayDirective],
+  imports: [CommonModule, PrismHighlightPipe],
   templateUrl: './example-xml-panel.component.html',
   styleUrl: './example-xml-panel.component.scss',
 })
@@ -59,44 +49,16 @@ export class ExampleXmlPanelComponent implements OnInit {
   @Input({ required: true }) selectedRoot = '';
   @Input({ required: true }) exampleXml = '';
   @Input({ required: true }) generationMode: ExampleXmlGenerationMode = 'minimal';
-  @Input({ required: true }) commentOptions!: ExampleXmlCommentOptions;
 
   @Output() readonly selectedRootFileChange = new EventEmitter<string>();
   @Output() readonly selectedRootChange = new EventEmitter<string>();
   @Output() readonly generationModeChange = new EventEmitter<ExampleXmlGenerationMode>();
-  @Output() readonly commentOptionChange = new EventEmitter<{
-    key: keyof ExampleXmlCommentOptions;
-    checked: boolean;
-  }>();
-  @Output() readonly commentOptionsBulkChange = new EventEmitter<boolean>();
 
   protected readonly isCollapsed = signal(false);
   protected readonly outputHeight = signal(0);
   protected readonly generationModeOptions: GenerationModeOption[] = [
     { value: 'minimal', label: 'Minimal' },
     { value: 'maximal', label: 'Maximal' },
-  ];
-  protected readonly commentOptionGroups: CommentOptionGroup[] = [
-    {
-      title: 'Element metadata',
-      options: [
-        { key: 'elementNames', label: 'Element labels' },
-        { key: 'documentation', label: 'Documentation' },
-        { key: 'occurrences', label: 'Occurrences' },
-      ],
-    },
-    {
-      title: 'Type metadata',
-      options: [
-        { key: 'declaredTypes', label: 'Declared types' },
-        { key: 'resolvedTypes', label: 'Resolved types' },
-        { key: 'restrictions', label: 'Restrictions' },
-      ],
-    },
-    {
-      title: 'Attribute metadata',
-      options: [{ key: 'attributes', label: 'Attributes' }],
-    },
   ];
 
   protected readonly emptyState = 'Load one or more XSD files to generate example XML.';
@@ -135,17 +97,6 @@ export class ExampleXmlPanelComponent implements OnInit {
     if (mode === 'maximal' || mode === 'minimal') {
       this.generationModeChange.emit(mode);
     }
-  }
-
-  protected onCommentOptionChange(
-    key: keyof ExampleXmlCommentOptions,
-    checked: boolean
-  ): void {
-    this.commentOptionChange.emit({ key, checked });
-  }
-
-  protected setAllCommentOptions(checked: boolean): void {
-    this.commentOptionsBulkChange.emit(checked);
   }
 
   protected get previewXml(): string {
