@@ -39,6 +39,8 @@ export class SchemaTreeNodeComponent implements OnChanges {
       .join(', ');
   });
 
+  protected readonly documentationItems = computed(() => this.node.documentationEntries);
+
   protected readonly metadataText = computed(() => {
     const metadata: string[] = [];
 
@@ -77,7 +79,7 @@ export class SchemaTreeNodeComponent implements OnChanges {
     const haystacks = [
       node.name,
       node.type,
-      node.documentation,
+      this.documentationItems().join(' | '),
       node.fileName ?? '',
       this.metadataText(),
       this.attributesText(),

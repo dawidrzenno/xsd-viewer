@@ -23,12 +23,16 @@
         @if (attributesText()) {
           <div class="metadata">Attributes: {{ attributesText() }}</div>
         }
+
+        @if (documentationItems().length > 0) {
+          <div class="documentation">
+            @for (item of documentationItems(); track item + '-' + $index) {
+              <div class="documentation-item">{{ item }}</div>
+            }
+          </div>
+        }
       </div>
     </div>
-
-    @if (node.documentation) {
-      <div class="documentation">{{ node.documentation }}</div>
-    }
 
     @if (restrictionsText()) {
       <div class="restrictions">{{ restrictionsText() }}</div>

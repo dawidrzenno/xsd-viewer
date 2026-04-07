@@ -195,7 +195,8 @@ function processType(
   }
 
   const children: ProcessedNode[] = [];
-  const documentation = getDocumentation(typeElement);
+  const documentationEntries = getDocumentationEntries(typeElement);
+  const documentation = documentationEntries[0] || "";
   const restrictions = getRestrictions(typeElement);
   const attributes = getAttributes(typeElement);
 
@@ -209,6 +210,7 @@ function processType(
       name: value,
       type: "enumeration",
       documentation: getDocumentation(enumElement),
+      documentationEntries: getDocumentationEntries(enumElement),
       restrictions: null,
       attributes: null,
       children: [],
@@ -230,6 +232,7 @@ function processType(
     name,
     type: typeKind,
     documentation,
+    documentationEntries,
     restrictions,
     attributes,
     children,
@@ -253,6 +256,7 @@ function getNestedElementSummaries(root: Element): ProcessedNode[] {
           name: stripNamespace(elementName),
           type: element.getAttribute("type") || "element",
           documentation: getDocumentation(element),
+          documentationEntries: getDocumentationEntries(element),
           restrictions: null,
           attributes: null,
           children: [],
@@ -268,11 +272,18 @@ function getNestedElementSummaries(root: Element): ProcessedNode[] {
 }
 
 export function getDocumentation(element: Element): string {
+  return getDocumentationEntries(element)[0] || "";
+}
+
+function getDocumentationEntries(element: Element): string[] {
   const annotation = getChildElements(element, "annotation")[0];
-  const documentation = annotation
-    ? getChildElements(annotation, "documentation")[0]
-    : null;
-  return documentation?.textContent?.trim() || "";
+  if (!annotation) {
+    return [];
+  }
+
+  return getChildElements(annotation, "documentation")
+    .map((documentation) => documentation.textContent?.trim() || "")
+    .filter(Boolean);
 }
 
 function getRestrictions(element: Element): Restrictions | null {
@@ -345,6 +356,7 @@ function processComplexContentExtension(
     name,
     type: "complexContent",
     documentation: "",
+    documentationEntries: getDocumentationEntries(extensionElement),
     restrictions: null,
     attributes: null,
     children: collectChildElementDefinitions(extensionElement).map((element) => ({
@@ -352,6 +364,7 @@ function processComplexContentExtension(
         element.getAttribute("name") || stripNamespace(element.getAttribute("ref")),
       type: element.getAttribute("type") || "element",
       documentation: getDocumentation(element),
+      documentationEntries: getDocumentationEntries(element),
       restrictions: null,
       attributes: null,
       children: [],

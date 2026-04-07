@@ -51,6 +51,7 @@ export interface ProcessedNode {
   name: string;
   type: string;
   documentation: string;
+  documentationEntries: string[];
   restrictions: Restrictions | null;
   attributes: ProcessedAttribute[] | null;
   children: ProcessedNode[];

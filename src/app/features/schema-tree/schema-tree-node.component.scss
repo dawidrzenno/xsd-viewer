@@ -78,15 +78,20 @@
 }
 
 .documentation {
-  margin: 0.5rem 0 0.5rem 2rem;
-  padding: 0.75rem 1rem;
-  font-style: italic;
+  margin-top: 0.4rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
-  border-left: 3px solid var(--accent);
-  background: linear-gradient(to right, rgba(19, 40, 61, 0.95), transparent);
-  border-radius: 0 4px 4px 0;
-  box-shadow: inset 0 0 0 1px rgba(39, 66, 97, 0.35);
+  font-size: 0.86rem;
+}
+
+.documentation-item + .documentation-item {
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(39, 66, 97, 0.28);
+}
+
+.documentation-item {
+  font-style: italic;
+  line-height: 1.4;
 }
 
 .metadata {
