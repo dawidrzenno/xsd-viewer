@@ -8,30 +8,45 @@
       <div class="file-input-section">
         <input type="file" accept=".xsd" multiple (change)="onFileChange($event)" />
         <div class="file-selection-status">
-          @if (fileNames().length === 0) {
+          @if (cachedFileNames().length === 0) {
             No cached schema
           } @else {
-            Cached: {{ fileNames().join(', ') }}
+            Cached: {{ cachedFileNames().length }} files, selected: {{ selectedFileNames().length }}
           }
         </div>
+        <button
+          class="control-btn"
+          type="button"
+          [disabled]="selectedFileNames().length === 0"
+          (click)="onClearFileSelection()"
+        >
+          Clear Selection
+        </button>
       </div>
     </div>
 
-    <div class="search-container">
-      <input
-        #searchInput
-        type="text"
-        class="search-input"
-        placeholder="Search schema..."
-        [value]="searchTerm()"
-        (input)="onSearchInput(searchInput.value)"
-      />
+    @if (cachedFileNames().length > 0) {
+      <div class="file-chip-list">
+        @for (fileName of cachedFileNames(); track fileName) {
+          <div class="file-chip">
+            <label class="file-chip-toggle">
+              <input
+                #fileCheckbox
+                type="checkbox"
+                [checked]="isFileSelected(fileName)"
+                (change)="onFileSelectionChange({ fileName, selected: fileCheckbox.checked })"
+              />
+              <span>{{ fileName }}</span>
+            </label>
 
-      <div class="control-buttons">
-        <button class="control-btn" type="button" (click)="onExpandAll()">Expand All</button>
-        <button class="control-btn" type="button" (click)="onCollapseAll()">Collapse All</button>
+            <button class="file-chip-remove" type="button" (click)="onRemoveFile(fileName)">
+              Remove
+            </button>
+          </div>
+        }
       </div>
-    </div>
+    }
+
   </div>
 </header>
 
@@ -46,8 +61,9 @@
   <app-xsd-handbook />
   <app-schema-tree
     [fileGroups]="fileGroups()"
-    [searchTerm]="searchTerm()"
-    [expandAll]="expandAll()"
+    [selectedFileNames]="selectedFileNames()"
+    (fileSelectionChange)="onFileSelectionChange($event)"
+    (fileRemove)="onRemoveFile($event)"
   />
 
   <app-xml-handbook />

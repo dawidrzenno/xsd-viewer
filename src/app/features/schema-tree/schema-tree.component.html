@@ -10,21 +10,70 @@
         (keydown.enter)="toggleFile(group.fileName)"
         (keydown.space)="toggleFile(group.fileName); $event.preventDefault()"
       >
-        <div class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
+        <div class="file-header-main">
+          <label class="file-header-toggle" (click)="$event.stopPropagation()">
+            <input
+              #fileCheckbox
+              type="checkbox"
+              [checked]="isFileSelected(group.fileName)"
+              (change)="onFileSelectionChange(group.fileName, fileCheckbox.checked)"
+            />
+            <span class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</span>
+          </label>
+
+          <button
+            class="file-remove-btn"
+            type="button"
+            (click)="onFileRemove(group.fileName); $event.stopPropagation()"
+          >
+            Remove
+          </button>
+        </div>
+
         <div class="file-header-subtitle">
-          Top-level schema definitions parsed from this XSD file.
+          @if (isFileSelected(group.fileName)) {
+            Top-level schema definitions parsed from this XSD file.
+          } @else {
+            This file is cached but currently excluded from the active schema view.
+          }
+        </div>
+
+        <div class="file-header-toolbar" (click)="$event.stopPropagation()">
+          <input
+            #searchInput
+            type="text"
+            class="tree-search-input"
+            placeholder="Search this file..."
+            [value]="getFileSearchTerm(group.fileName)"
+            (input)="onSearchInput(group.fileName, searchInput.value)"
+          />
+
+          <div class="tree-toolbar-actions">
+            <button class="tree-toolbar-btn" type="button" (click)="onExpandAll(group.fileName)">
+              Expand All
+            </button>
+            <button class="tree-toolbar-btn" type="button" (click)="onCollapseAll(group.fileName)">
+              Collapse All
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="file-body" [class.collapsed]="isFileCollapsed(group.fileName)">
         <div class="file-body-inner">
-          @for (node of group.nodes; track node.name + '-' + $index) {
-            <app-schema-tree-node
-              [node]="node"
-              [searchTerm]="searchTerm"
-              [expandAll]="expandAll"
-              [depth]="0"
-            />
+          @if (group.nodes.length === 0) {
+            <div class="file-empty-state">
+              No parsed nodes available for this file while it is unselected.
+            </div>
+          } @else {
+            @for (node of group.nodes; track node.name + '-' + $index) {
+              <app-schema-tree-node
+                [node]="node"
+                [searchTerm]="getFileSearchTerm(group.fileName)"
+                [expandAll]="isFileExpanded(group.fileName)"
+                [depth]="0"
+              />
+            }
           }
         </div>
       </div>

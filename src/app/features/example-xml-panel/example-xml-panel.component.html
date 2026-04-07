@@ -76,7 +76,9 @@
         </div>
       </div>
 
-      <pre class="example-output"><code class="language-markup" [innerHTML]="(exampleXml || emptyState) | prismHighlight"></code></pre>
+      <div class="example-output-shell" [style.height.px]="outputHeight()">
+        <pre #outputContent class="example-output"><code class="language-markup" [innerHTML]="(exampleXml || emptyState) | prismHighlight"></code></pre>
+      </div>
     </div>
   </div>
 </section>

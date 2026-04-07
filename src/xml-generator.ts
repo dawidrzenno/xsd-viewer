@@ -13,8 +13,9 @@ export function generateExampleXml(
   schemaModel: SchemaModel,
   commentOptions: ExampleXmlCommentOptions
 ): string {
-  if (rootElementName === VIRTUAL_ROOT_VALUE) {
-    return generateVirtualRootXml(schemaModel, commentOptions);
+  const virtualRootFileName = parseVirtualRootFileName(rootElementName);
+  if (virtualRootFileName) {
+    return generateVirtualRootXml(schemaModel, commentOptions, virtualRootFileName);
   }
 
   const rootDefinition = schemaModel.elements.get(rootElementName);
@@ -39,14 +40,15 @@ export function generateExampleXml(
 
 function generateVirtualRootXml(
   schemaModel: SchemaModel,
-  commentOptions: ExampleXmlCommentOptions
+  commentOptions: ExampleXmlCommentOptions,
+  fileName: string
 ): string {
-  const topLevelElements = Array.from(schemaModel.elements.entries()).sort(([a], [b]) =>
-    a.localeCompare(b)
-  );
+  const topLevelElements = Array.from(schemaModel.elements.entries())
+    .filter(([, definition]) => definition.fileName === fileName)
+    .sort(([a], [b]) => a.localeCompare(b));
 
   if (topLevelElements.length === 0) {
-    throw new Error("No top-level elements were found");
+    throw new Error(`No top-level elements were found for file "${fileName}"`);
   }
 
   const virtualRoot: ExampleXmlNode = {
@@ -55,7 +57,7 @@ function generateVirtualRootXml(
     children: [],
     text: "",
     comments: commentOptions.elementNames
-      ? ["Virtual root generated to include all top-level XSD elements in one XML document."]
+      ? [`Virtual root generated to include all top-level XSD elements from ${fileName}.`]
       : [],
   };
 
@@ -730,4 +732,12 @@ function escapeXmlComment(value: string): string {
     .replaceAll("--", "- -")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+}
+
+function parseVirtualRootFileName(rootValue: string): string | null {
+  if (!rootValue.startsWith(`${VIRTUAL_ROOT_VALUE}:`)) {
+    return null;
+  }
+
+  return rootValue.slice(`${VIRTUAL_ROOT_VALUE}:`.length) || null;
 }

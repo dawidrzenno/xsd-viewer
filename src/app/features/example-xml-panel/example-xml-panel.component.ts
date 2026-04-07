@@ -1,5 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 import type { ExampleXmlCommentOptions } from '../../../types';
 import {
@@ -28,6 +39,8 @@ interface CommentOptionGroup {
   styleUrl: './example-xml-panel.component.scss',
 })
 export class ExampleXmlPanelComponent implements OnInit {
+  @ViewChild('outputContent') private outputContent?: ElementRef<HTMLElement>;
+
   @Input({ required: true }) rootOptions: RootOption[] = [];
   @Input({ required: true }) selectedRoot = '';
   @Input({ required: true }) exampleXml = '';
@@ -41,6 +54,7 @@ export class ExampleXmlPanelComponent implements OnInit {
   @Output() readonly commentOptionsBulkChange = new EventEmitter<boolean>();
 
   protected readonly isCollapsed = signal(false);
+  protected readonly outputHeight = signal(0);
   protected readonly commentOptionGroups: CommentOptionGroup[] = [
     {
       title: 'Element metadata',
@@ -65,9 +79,19 @@ export class ExampleXmlPanelComponent implements OnInit {
   ];
 
   protected readonly emptyState = 'Load one or more XSD files to generate example XML.';
+  private resizeObserver: ResizeObserver | null = null;
 
   ngOnInit(): void {
     this.isCollapsed.set(loadHandbookCollapsedState('example-xml'));
+  }
+
+  ngAfterViewInit(): void {
+    this.initializeOutputResizeObserver();
+    this.syncOutputHeight();
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
   }
 
   protected toggleCollapsed(): void {
@@ -103,5 +127,28 @@ export class ExampleXmlPanelComponent implements OnInit {
     } catch (error) {
       console.error('Could not copy XML:', error);
     }
+  }
+
+  private initializeOutputResizeObserver(): void {
+    const element = this.outputContent?.nativeElement;
+    if (!element) {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this.syncOutputHeight();
+    });
+    this.resizeObserver.observe(element);
+  }
+
+  private syncOutputHeight(): void {
+    requestAnimationFrame(() => {
+      const element = this.outputContent?.nativeElement;
+      if (!element) {
+        return;
+      }
+
+      this.outputHeight.set(element.scrollHeight);
+    });
   }
 }

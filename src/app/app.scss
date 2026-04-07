@@ -16,9 +16,10 @@
 .header-content {
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .header-main {
@@ -72,7 +73,7 @@ input[type='file']::-webkit-file-upload-button:hover {
 }
 
 .file-selection-status {
-  max-width: 28rem;
+  max-width: 18rem;
   padding: 0.35rem 0.75rem;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 999px;
@@ -84,36 +85,48 @@ input[type='file']::-webkit-file-upload-button:hover {
   text-overflow: ellipsis;
 }
 
-.search-container {
-  margin-left: 20px;
-  flex: 1;
-  max-width: 460px;
+.file-chip-list {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-items: center;
-  gap: 10px;
 }
 
-.search-input {
-  flex: 1;
-  padding: 8px 12px;
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  min-width: 200px;
-  background: rgba(19, 35, 58, 0.85);
+  border-radius: 999px;
+  background: rgba(19, 35, 58, 0.75);
+}
+
+.file-chip-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: var(--text);
+  font-size: 0.82rem;
 }
 
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(115, 180, 255, 0.18);
+.file-chip-toggle input {
+  accent-color: var(--accent);
 }
 
-.control-buttons {
-  display: flex;
-  gap: 8px;
-  white-space: nowrap;
+.file-chip-remove {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.file-chip-remove:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
 }
 
 .control-btn {
@@ -192,10 +205,5 @@ input[type='file']::-webkit-file-upload-button:hover {
   .header-main {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .search-container {
-    margin-left: 0;
-    max-width: none;
   }
 }

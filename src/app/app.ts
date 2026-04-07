@@ -59,7 +59,9 @@ export class App {
   protected readonly searchTerm = signal('');
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
+  protected readonly cachedFiles = signal<CachedFileEntry[]>([]);
   protected readonly fileNames = signal<string[]>([]);
+  protected readonly selectedFileNames = signal<string[]>([]);
   protected readonly processedNodes = signal<ProcessedNode[]>([]);
   protected readonly schemaModel = signal<SchemaModel>(buildSchemaModel([]));
   protected readonly selectedRoot = signal('');
@@ -70,18 +72,29 @@ export class App {
   );
 
   protected readonly rootOptions = computed(() => {
-    const rootNames = Array.from(this.schemaModel().elements.keys()).sort((a, b) =>
-      a.localeCompare(b),
-    );
+    const rootNames = Array.from(this.schemaModel().elements.entries())
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, entry]) => ({
+        value: name,
+        label: `${name} (${entry.fileName})`,
+      }));
 
     if (rootNames.length === 0) {
       return [];
     }
 
-    return [
-      { value: VIRTUAL_ROOT_VALUE, label: 'Virtual root (all top-level elements)' },
-      ...rootNames.map((name) => ({ value: name, label: name })),
-    ];
+    const virtualRoots = this.cachedFileNames()
+      .filter((fileName) =>
+        Array.from(this.schemaModel().elements.values()).some(
+          (entry) => entry.fileName === fileName,
+        ),
+      )
+      .map((fileName) => ({
+        value: `${VIRTUAL_ROOT_VALUE}:${fileName}`,
+        label: `Virtual root (${fileName})`,
+      }));
+
+    return [...virtualRoots, ...rootNames];
   });
 
   protected readonly fileGroups = computed<SchemaFileGroup[]>(() => {
@@ -93,11 +106,17 @@ export class App {
       return acc;
     }, new Map());
 
-    return Array.from(groups.entries()).map(([fileName, nodes]) => ({
+    return this.cachedFileNames().map((fileName) => ({
       fileName,
-      nodes,
+      nodes: groups.get(fileName) ?? [],
     }));
   });
+
+  protected readonly cachedFileNames = computed(() =>
+    this.fileNames()
+      .slice()
+      .sort((left, right) => left.localeCompare(right)),
+  );
 
   constructor() {
     void this.restoreCachedFiles();
@@ -111,8 +130,22 @@ export class App {
       return;
     }
 
-    const fileEntries = await readFiles(files);
-    await this.parseCachedEntries(fileEntries, true);
+    const nextEntries = await readFiles(files);
+    if (nextEntries.length === 0) {
+      return;
+    }
+
+    const mergedEntries = this.mergeCachedEntries(this.cachedFiles(), nextEntries);
+    const selectedNames = new Set(this.selectedFileNames());
+    nextEntries.forEach((file) => selectedNames.add(file.name));
+
+    this.cachedFiles.set(mergedEntries);
+    this.fileNames.set(mergedEntries.map((file) => file.name));
+    this.selectedFileNames.set(Array.from(selectedNames));
+    saveCachedFiles(mergedEntries);
+    await this.applySelection();
+
+    input.value = '';
   }
 
   protected onSearchInput(term: string): void {
@@ -160,37 +193,77 @@ export class App {
     this.generateExampleXmlForRoot(this.selectedRoot());
   }
 
+  protected isFileSelected(fileName: string): boolean {
+    return this.selectedFileNames().includes(fileName);
+  }
+
+  protected async onFileSelectionChange(change: {
+    fileName: string;
+    selected: boolean;
+  }): Promise<void> {
+    const nextSelected = change.selected
+      ? Array.from(new Set([...this.selectedFileNames(), change.fileName]))
+      : this.selectedFileNames().filter((fileName) => fileName !== change.fileName);
+
+    this.selectedFileNames.set(nextSelected);
+    await this.applySelection();
+  }
+
+  protected async onClearFileSelection(): Promise<void> {
+    this.selectedFileNames.set([]);
+    await this.applySelection();
+  }
+
+  protected async onRemoveFile(fileName: string): Promise<void> {
+    const nextCachedFiles = this.cachedFiles().filter((file) => file.name !== fileName);
+    this.cachedFiles.set(nextCachedFiles);
+    this.fileNames.set(nextCachedFiles.map((file) => file.name));
+    this.selectedFileNames.set(
+      this.selectedFileNames().filter((selectedFileName) => selectedFileName !== fileName),
+    );
+    saveCachedFiles(nextCachedFiles);
+    await this.applySelection();
+  }
+
   private async restoreCachedFiles(): Promise<void> {
     const cachedFiles = loadCachedFiles();
+    this.cachedFiles.set(cachedFiles);
+    this.fileNames.set(cachedFiles.map((file) => file.name));
 
     if (cachedFiles.length === 0) {
-      this.fileNames.set([]);
+      this.selectedFileNames.set([]);
       return;
     }
 
-    await this.parseCachedEntries(cachedFiles, false);
+    this.selectedFileNames.set(cachedFiles.map((file) => file.name));
+    await this.applySelection();
   }
 
-  private async parseCachedEntries(
-    fileEntries: CachedFileEntry[],
-    persistToCache: boolean,
-  ): Promise<void> {
+  private async applySelection(): Promise<void> {
+    const selectedEntries = this.cachedFiles().filter((file) =>
+      this.selectedFileNames().includes(file.name),
+    );
+
+    if (selectedEntries.length === 0) {
+      this.errorMessage.set('');
+      this.processedNodes.set([]);
+      this.schemaModel.set(buildSchemaModel([]));
+      this.selectedRoot.set('');
+      this.exampleXml.set('');
+      return;
+    }
+
     try {
       this.isLoading.set(true);
       this.errorMessage.set('');
 
-      const xsdDocs = parseCachedFiles(fileEntries);
-
-      if (persistToCache) {
-        saveCachedFiles(fileEntries);
-      }
+      const xsdDocs = parseCachedFiles(selectedEntries);
 
       const schemaModel = buildSchemaModel(xsdDocs);
       const processedNodes = processXsdDocs(xsdDocs);
 
       this.schemaModel.set(schemaModel);
       this.processedNodes.set(processedNodes);
-      this.fileNames.set(fileEntries.map((file) => file.name));
       this.expandAll.set(true);
 
       const initialRoot = this.resolveInitialRoot(schemaModel);
@@ -210,23 +283,42 @@ export class App {
     }
   }
 
+  private mergeCachedEntries(
+    currentEntries: CachedFileEntry[],
+    nextEntries: CachedFileEntry[],
+  ): CachedFileEntry[] {
+    const entriesByName = new Map(currentEntries.map((file) => [file.name, file]));
+    nextEntries.forEach((file) => {
+      entriesByName.set(file.name, file);
+    });
+    return Array.from(entriesByName.values());
+  }
+
   private resolveInitialRoot(schemaModel: SchemaModel): string {
     const rootNames = Array.from(schemaModel.elements.keys()).sort((a, b) =>
       a.localeCompare(b),
     );
+    const virtualRootNames = this.cachedFileNames()
+      .filter((fileName) =>
+        Array.from(schemaModel.elements.values()).some((entry) => entry.fileName === fileName),
+      )
+      .map((fileName) => `${VIRTUAL_ROOT_VALUE}:${fileName}`);
+    const availableValues = new Set([...virtualRootNames, ...rootNames]);
 
-    if (rootNames.length === 0) {
+    if (availableValues.size === 0) {
       return '';
     }
 
     const savedRoot = loadSelectedRoot();
-    const availableValues = new Set([VIRTUAL_ROOT_VALUE, ...rootNames]);
     if (savedRoot && availableValues.has(savedRoot)) {
       saveSelectedRoot(savedRoot);
       return savedRoot;
     }
 
-    const nextRoot = rootNames.length === 1 ? rootNames[0] : VIRTUAL_ROOT_VALUE;
+    const nextRoot =
+      virtualRootNames[0] ||
+      rootNames[0] ||
+      '';
     saveSelectedRoot(nextRoot);
     return nextRoot;
   }
