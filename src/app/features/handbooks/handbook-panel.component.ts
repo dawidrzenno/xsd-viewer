@@ -4,9 +4,15 @@ import {
   Component,
   ElementRef,
   Input,
+  OnInit,
   QueryList,
   ViewChildren,
+  signal,
 } from '@angular/core';
+import {
+  loadHandbookCollapsedState,
+  saveHandbookCollapsedState,
+} from '../../../storage';
 import type { HandbookSection } from './handbook-data';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 
@@ -17,14 +23,20 @@ import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
   templateUrl: './handbook-panel.component.html',
   styleUrl: './handbook-panel.component.scss',
 })
-export class HandbookPanelComponent implements AfterViewInit {
+export class HandbookPanelComponent implements OnInit, AfterViewInit {
+  @Input({ required: true }) handbookId = '';
   @Input({ required: true }) title = '';
   @Input({ required: true }) subtitle = '';
   @Input({ required: true }) sections: HandbookSection[] = [];
 
   @ViewChildren('cardElement') private readonly cardElements!: QueryList<ElementRef<HTMLElement>>;
 
+  protected readonly isCollapsed = signal(false);
   protected renderedSections: HandbookSection[] = [];
+
+  ngOnInit(): void {
+    this.isCollapsed.set(loadHandbookCollapsedState(this.handbookId));
+  }
 
   ngAfterViewInit(): void {
     this.renderedSections = this.sections.map((section) => ({
@@ -33,6 +45,14 @@ export class HandbookPanelComponent implements AfterViewInit {
     }));
 
     queueMicrotask(() => this.sortCardsByHeight());
+  }
+
+  protected toggleCollapsed(): void {
+    this.isCollapsed.update((value) => {
+      const nextValue = !value;
+      saveHandbookCollapsedState(this.handbookId, nextValue);
+      return nextValue;
+    });
   }
 
   private sortCardsByHeight(): void {

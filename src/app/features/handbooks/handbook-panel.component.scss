@@ -16,6 +16,14 @@
     linear-gradient(90deg, rgba(115, 180, 255, 0.1), transparent 40%),
     var(--bg-panel-2);
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cheatsheet-header-copy {
+  flex: 1;
 }
 
 .cheatsheet-title {
@@ -27,6 +35,22 @@
 .cheatsheet-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+.cheatsheet-toggle {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.cheatsheet-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
 }
 
 .cheatsheet-sections {
@@ -91,4 +115,11 @@
   margin-top: 0.65rem;
   font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .cheatsheet-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

@@ -1,6 +1,7 @@
 export const VIRTUAL_ROOT_VALUE = "__virtual_root__";
 export const CACHED_FILES_STORAGE_KEY = "xsd-viewer:cached-files";
 export const SELECTED_ROOT_STORAGE_KEY = "xsd-viewer:selected-root";
+export const HANDBOOK_STATE_STORAGE_KEY_PREFIX = "xsd-viewer:handbook-state:";
 
 export const BUILT_IN_TYPES = new Set([
   "anyuri",

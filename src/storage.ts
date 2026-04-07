@@ -1,5 +1,6 @@
 import {
   CACHED_FILES_STORAGE_KEY,
+  HANDBOOK_STATE_STORAGE_KEY_PREFIX,
   SELECTED_ROOT_STORAGE_KEY,
 } from "./constants";
 import type { CachedFileEntry } from "./types";
@@ -40,5 +41,25 @@ export function saveSelectedRoot(rootName: string): void {
     window.localStorage.setItem(SELECTED_ROOT_STORAGE_KEY, rootName);
   } catch (error) {
     console.error("Could not save selected root:", error);
+  }
+}
+
+export function loadHandbookCollapsedState(handbookId: string): boolean {
+  try {
+    return window.localStorage.getItem(`${HANDBOOK_STATE_STORAGE_KEY_PREFIX}${handbookId}`) === "true";
+  } catch (error) {
+    console.error("Could not load handbook state:", error);
+    return false;
+  }
+}
+
+export function saveHandbookCollapsedState(handbookId: string, isCollapsed: boolean): void {
+  try {
+    window.localStorage.setItem(
+      `${HANDBOOK_STATE_STORAGE_KEY_PREFIX}${handbookId}`,
+      String(isCollapsed)
+    );
+  } catch (error) {
+    console.error("Could not save handbook state:", error);
   }
 }

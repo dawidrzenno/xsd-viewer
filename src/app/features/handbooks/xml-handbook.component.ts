@@ -8,6 +8,7 @@ import { HandbookPanelComponent } from './handbook-panel.component';
   imports: [HandbookPanelComponent],
   template: `
     <app-handbook-panel
+      handbookId="xml"
       title="XML Handbook"
       subtitle="Practical reference for reading, editing, and validating XML documents."
       [sections]="sections"

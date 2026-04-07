@@ -2,7 +2,7 @@
   <div class="header-content">
     <div class="header-main">
       <div class="title-section">
-        <h1>XSD Schema Viewer</h1>
+        <h1>XML Workshop</h1>
       </div>
 
       <div class="file-input-section">
@@ -42,13 +42,8 @@
 }
 
 <div class="app-shell">
-  <app-example-xml-panel
-    [rootOptions]="rootOptions()"
-    [selectedRoot]="selectedRoot()"
-    [exampleXml]="exampleXml()"
-    (selectedRootChange)="onRootSelectionChange($event)"
-  />
 
+  <app-xsd-handbook />
   <app-schema-tree
     [fileGroups]="fileGroups()"
     [searchTerm]="searchTerm()"
@@ -56,7 +51,12 @@
   />
 
   <app-xml-handbook />
-  <app-xsd-handbook />
+  <app-example-xml-panel
+    [rootOptions]="rootOptions()"
+    [selectedRoot]="selectedRoot()"
+    [exampleXml]="exampleXml()"
+    (selectedRootChange)="onRootSelectionChange($event)"
+  />
 </div>
 
 @if (isLoading()) {
