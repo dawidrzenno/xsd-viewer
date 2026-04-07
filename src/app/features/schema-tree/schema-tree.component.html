@@ -38,6 +38,45 @@
           }
         </div>
 
+        @if (group.schemaInfo) {
+          <div class="file-schema-data">
+            @if (group.schemaInfo.targetNamespace) {
+              <div class="file-schema-item">
+                <span class="file-schema-label">targetNamespace</span>
+                <span class="file-schema-value">{{ group.schemaInfo.targetNamespace }}</span>
+              </div>
+            }
+
+            @if (group.schemaInfo.elementFormDefault) {
+              <div class="file-schema-item">
+                <span class="file-schema-label">elementFormDefault</span>
+                <span class="file-schema-value">{{ group.schemaInfo.elementFormDefault }}</span>
+              </div>
+            }
+
+            @if (group.schemaInfo.attributeFormDefault) {
+              <div class="file-schema-item">
+                <span class="file-schema-label">attributeFormDefault</span>
+                <span class="file-schema-value">{{ group.schemaInfo.attributeFormDefault }}</span>
+              </div>
+            }
+
+            @if (group.schemaInfo.version) {
+              <div class="file-schema-item">
+                <span class="file-schema-label">version</span>
+                <span class="file-schema-value">{{ group.schemaInfo.version }}</span>
+              </div>
+            }
+
+            @if (group.schemaInfo.schemaId) {
+              <div class="file-schema-item">
+                <span class="file-schema-label">id</span>
+                <span class="file-schema-value">{{ group.schemaInfo.schemaId }}</span>
+              </div>
+            }
+          </div>
+        }
+
         <div class="file-header-toolbar" (click)="$event.stopPropagation()">
           <input
             #searchInput

@@ -23,6 +23,14 @@ export interface SchemaModel {
   builtInTypes: Set<string>;
 }
 
+export interface SchemaFileInfo {
+  targetNamespace: string;
+  elementFormDefault: string;
+  attributeFormDefault: string;
+  version: string;
+  schemaId: string;
+}
+
 export interface ProcessedAttribute {
   name: string;
   type: string | null;

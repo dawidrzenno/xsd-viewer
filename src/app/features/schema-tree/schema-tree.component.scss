@@ -88,6 +88,36 @@
   color: var(--text-muted);
 }
 
+.file-schema-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.file-schema-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 20, 36, 0.5);
+}
+
+.file-schema-label {
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.file-schema-value {
+  color: var(--text);
+  font-size: 0.78rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
 .file-header-toolbar {
   margin-top: 0.85rem;
   display: flex;

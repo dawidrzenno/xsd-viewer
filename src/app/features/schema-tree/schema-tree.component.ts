@@ -4,12 +4,13 @@ import {
   loadSchemaFileCollapsedState,
   saveSchemaFileCollapsedState,
 } from '../../../storage';
-import type { ProcessedNode } from '../../../types';
+import type { ProcessedNode, SchemaFileInfo } from '../../../types';
 import { SchemaTreeNodeComponent } from './schema-tree-node.component';
 
 interface SchemaFileGroup {
   fileName: string;
   nodes: ProcessedNode[];
+  schemaInfo: SchemaFileInfo | null;
 }
 
 @Component({

@@ -10,6 +10,7 @@ import type {
   LoadedXsdDoc,
   ProcessedAttribute,
   ProcessedNode,
+  SchemaFileInfo,
   Restrictions,
   SchemaModel,
 } from "./types";
@@ -126,6 +127,43 @@ export function processXsdDocs(docs: LoadedXsdDoc[]): ProcessedNode[] {
   }
 
   return types;
+}
+
+export function extractSchemaFileInfo(
+  fileEntries: CachedFileEntry[],
+): Record<string, SchemaFileInfo> {
+  const parser = new DOMParser();
+  const infoByFile: Record<string, SchemaFileInfo> = {};
+
+  fileEntries.forEach((file) => {
+    try {
+      const doc = parser.parseFromString(file.text, "text/xml");
+      if (doc.querySelector("parsererror")) {
+        return;
+      }
+
+      const schemaElement = doc.documentElement;
+      if (
+        !schemaElement ||
+        schemaElement.localName !== "schema" ||
+        schemaElement.namespaceURI !== "http://www.w3.org/2001/XMLSchema"
+      ) {
+        return;
+      }
+
+      infoByFile[file.name] = {
+        targetNamespace: schemaElement.getAttribute("targetNamespace") || "",
+        elementFormDefault: schemaElement.getAttribute("elementFormDefault") || "",
+        attributeFormDefault: schemaElement.getAttribute("attributeFormDefault") || "",
+        version: schemaElement.getAttribute("version") || "",
+        schemaId: schemaElement.getAttribute("id") || "",
+      };
+    } catch (error) {
+      console.error(`Error extracting schema root data from ${file.name}:`, error);
+    }
+  });
+
+  return infoByFile;
 }
 
 function processSimpleTypes(doc: XMLDocument, fileName: string): ProcessedNode[] {

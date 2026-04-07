@@ -3,6 +3,7 @@ import { Component, computed, signal } from '@angular/core';
 import { ALL_NODES_VALUE } from '../constants';
 import {
   buildSchemaModel,
+  extractSchemaFileInfo,
   parseCachedFiles,
   processXsdDocs,
   readFiles,
@@ -22,6 +23,7 @@ import type {
   ExampleXmlFileOption,
   ExampleXmlGenerationMode,
   ProcessedNode,
+  SchemaFileInfo,
   SchemaModel,
 } from '../types';
 import { generateExampleXml } from '../xml-generator';
@@ -33,6 +35,7 @@ import { XsdHandbookComponent } from './features/handbooks/xsd-handbook.componen
 interface SchemaFileGroup {
   fileName: string;
   nodes: ProcessedNode[];
+  schemaInfo: SchemaFileInfo | null;
 }
 
 @Component({
@@ -94,6 +97,7 @@ export class App {
   });
 
   protected readonly fileGroups = computed<SchemaFileGroup[]>(() => {
+    const schemaInfoByFile = extractSchemaFileInfo(this.cachedFiles());
     const groups = this.processedNodes().reduce<Map<string, ProcessedNode[]>>((acc, node) => {
       const fileName = node.fileName || 'Unknown File';
       const fileNodes = acc.get(fileName) ?? [];
@@ -105,6 +109,7 @@ export class App {
     return this.cachedFileNames().map((fileName) => ({
       fileName,
       nodes: groups.get(fileName) ?? [],
+      schemaInfo: schemaInfoByFile[fileName] ?? null,
     }));
   });
 
