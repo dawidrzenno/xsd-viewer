@@ -1,0 +1,87 @@
+.example-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(15, 27, 45, 0.95), rgba(10, 20, 36, 0.92));
+  box-shadow: var(--shadow);
+}
+
+.example-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(115, 180, 255, 0.12), transparent 40%),
+    var(--bg-panel-2);
+}
+
+.example-panel-title {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.example-panel-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.example-panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.example-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.6rem 2.2rem 0.6rem 0.8rem;
+  background-color: var(--bg-panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='white'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 10px 6px;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.control-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.example-output {
+  margin: 0;
+  padding: 1.25rem;
+  background: rgba(6, 13, 24, 0.94);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.example-output code {
+  display: block;
+  min-height: 1.55em;
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  --bg: #08111f;
+  --bg-elevated: #0f1b2d;
+  --bg-panel: #13233a;
+  --bg-panel-2: #182b45;
+  --bg-hover: #1d3351;
+  --bg-accent-soft: #13283d;
+  --border: #274261;
+  --border-strong: #35567c;
+  --text: #e6edf7;
+  --text-muted: #94a9c6;
+  --text-subtle: #6f88aa;
+  --accent: #73b4ff;
+  --accent-strong: #9fd0ff;
+  --type-bg: #1d2446;
+  --type-border: #49539a;
+  --type-text: #cbb8ff;
+  --warning-bg: #2b1f42;
+  --warning-text: #d8c1ff;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  font-family: 'Host Grotesk', serif;
+  line-height: 1.6;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(115, 180, 255, 0.14), transparent 32%),
+    linear-gradient(180deg, #0a1424 0%, var(--bg) 100%);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+pre[class*='language-'],
+code[class*='language-'] {
+  background: transparent;
+  text-shadow: none;
+}

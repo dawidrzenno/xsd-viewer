@@ -1,0 +1,50 @@
+@if (isVisible()) {
+  <div class="tree-node" [style.--depth]="depth">
+    <div class="node-content">
+      @if (node.children.length > 0) {
+        <button
+          class="toggle-btn"
+          type="button"
+          [class.open]="isExpanded()"
+          (click)="toggleExpanded()"
+        ></button>
+      }
+
+      <div class="node-info">
+        <div>
+          <span class="node-name">{{ node.name }}</span>
+          <span class="node-type">{{ node.type }}</span>
+        </div>
+
+        @if (metadataText()) {
+          <div class="metadata">{{ metadataText() }}</div>
+        }
+
+        @if (attributesText()) {
+          <div class="metadata">Attributes: {{ attributesText() }}</div>
+        }
+      </div>
+    </div>
+
+    @if (node.documentation) {
+      <div class="documentation">{{ node.documentation }}</div>
+    }
+
+    @if (restrictionsText()) {
+      <div class="restrictions">{{ restrictionsText() }}</div>
+    }
+
+    @if (node.children.length > 0 && isExpanded()) {
+      <div class="children">
+        @for (child of node.children; track child.name + '-' + $index) {
+          <app-schema-tree-node
+            [node]="child"
+            [searchTerm]="searchTerm"
+            [expandAll]="expandAll"
+            [depth]="depth + 1"
+          />
+        }
+      </div>
+    }
+  </div>
+}

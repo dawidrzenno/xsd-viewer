@@ -1,0 +1,49 @@
+{
+  "hash": "33706ae1",
+  "configHash": "d4255e30",
+  "lockfileHash": "e0b6df59",
+  "browserHash": "54588dfe",
+  "optimized": {
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "7542fa7d",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "51383cfe",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "c6a5e318",
+      "needsInterop": false
+    },
+    "prismjs": {
+      "src": "../../../../../../node_modules/prismjs/prism.js",
+      "file": "prismjs.js",
+      "fileHash": "856bfd28",
+      "needsInterop": true
+    },
+    "prismjs/components/prism-markup": {
+      "src": "../../../../../../node_modules/prismjs/components/prism-markup.js",
+      "file": "prismjs_components_prism-markup.js",
+      "fileHash": "512fa314",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-V4JX2M34": {
+      "file": "chunk-V4JX2M34.js"
+    },
+    "chunk-5HOEKKOY": {
+      "file": "chunk-5HOEKKOY.js"
+    },
+    "chunk-H2SRQSE4": {
+      "file": "chunk-H2SRQSE4.js"
+    }
+  }
+}

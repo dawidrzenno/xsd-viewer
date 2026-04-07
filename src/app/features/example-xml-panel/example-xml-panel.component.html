@@ -1,0 +1,31 @@
+<section class="example-panel">
+  <div class="example-panel-header">
+    <div>
+      <div class="example-panel-title">Example XML Generator</div>
+      <div class="example-panel-subtitle">
+        Generate a minimal sample instance document from the loaded schema.
+      </div>
+    </div>
+
+    <div class="example-panel-controls">
+      <select
+        #rootSelect
+        class="example-select"
+        [value]="selectedRoot"
+        (change)="onRootChange(rootSelect.value)"
+      >
+        @if (rootOptions.length === 0) {
+          <option value="">Choose root element</option>
+        } @else {
+          @for (option of rootOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        }
+      </select>
+
+      <button class="control-btn" type="button" (click)="copyXml()">Copy XML</button>
+    </div>
+  </div>
+
+  <pre class="example-output"><code class="language-markup" [innerHTML]="(exampleXml || emptyState) | prismHighlight"></code></pre>
+</section>

@@ -2,19 +2,29 @@
   "name": "xsd-viewer",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development"
+  },
+  "packageManager": "npm@10.8.2",
+  "dependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/compiler": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "@angular/platform-browser": "^21.2.0",
+    "prismjs": "^1.30.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular/build": "^21.2.6",
+    "@angular/cli": "^21.2.6",
+    "@angular/compiler-cli": "^21.2.0",
     "@flydotio/dockerfile": "^0.5.9",
     "@types/prismjs": "^1.26.6",
-    "typescript": "^6.0.2",
-    "vite": "^6.0.1"
-  },
-  "dependencies": {
-    "prismjs": "^1.30.0"
+    "typescript": "~5.9.2"
   }
 }

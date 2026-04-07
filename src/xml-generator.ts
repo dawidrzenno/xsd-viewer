@@ -21,7 +21,7 @@ export function generateExampleXml(
   });
 
   if (rootDefinition.targetNamespace) {
-    rootNode.attributes.xmlns = rootDefinition.targetNamespace;
+    rootNode.attributes["xmlns"] = rootDefinition.targetNamespace;
   }
 
   return [
@@ -53,7 +53,7 @@ function generateVirtualRootXml(schemaModel: SchemaModel): string {
     });
 
     if (definition.targetNamespace) {
-      childNode.attributes.xmlns = definition.targetNamespace;
+      childNode.attributes["xmlns"] = definition.targetNamespace;
     }
 
     virtualRoot.children.push(childNode);

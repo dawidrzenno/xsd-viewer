@@ -1,0 +1,69 @@
+<header class="app-header">
+  <div class="header-content">
+    <div class="header-main">
+      <div class="title-section">
+        <h1>XSD Schema Viewer</h1>
+      </div>
+
+      <div class="file-input-section">
+        <input type="file" accept=".xsd" multiple (change)="onFileChange($event)" />
+        <div class="file-selection-status">
+          @if (fileNames().length === 0) {
+            No cached schema
+          } @else {
+            Cached: {{ fileNames().join(', ') }}
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="search-container">
+      <input
+        #searchInput
+        type="text"
+        class="search-input"
+        placeholder="Search schema..."
+        [value]="searchTerm()"
+        (input)="onSearchInput(searchInput.value)"
+      />
+
+      <div class="control-buttons">
+        <button class="control-btn" type="button" (click)="onExpandAll()">Expand All</button>
+        <button class="control-btn" type="button" (click)="onCollapseAll()">Collapse All</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+@if (errorMessage()) {
+  <div class="app-shell">
+    <div class="error-message">{{ errorMessage() }}</div>
+  </div>
+}
+
+<div class="app-shell">
+  <app-example-xml-panel
+    [rootOptions]="rootOptions()"
+    [selectedRoot]="selectedRoot()"
+    [exampleXml]="exampleXml()"
+    (selectedRootChange)="onRootSelectionChange($event)"
+  />
+
+  <app-schema-tree
+    [fileGroups]="fileGroups()"
+    [searchTerm]="searchTerm()"
+    [expandAll]="expandAll()"
+  />
+
+  <app-xml-handbook />
+  <app-xsd-handbook />
+</div>
+
+@if (isLoading()) {
+  <div class="loader">
+    <div class="loader-content">
+      <div class="spinner"></div>
+      <div>Processing files...</div>
+    </div>
+  </div>
+}

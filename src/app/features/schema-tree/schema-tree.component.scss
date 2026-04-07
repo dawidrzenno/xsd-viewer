@@ -1,0 +1,20 @@
+.tree-viewer {
+  background: transparent;
+}
+
+.file-section {
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(15, 27, 45, 0.78);
+  box-shadow: var(--shadow);
+}
+
+.file-header {
+  padding: 1rem;
+  background: var(--bg-panel-2);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  color: var(--text);
+}

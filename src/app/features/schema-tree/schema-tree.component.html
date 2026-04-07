@@ -1,0 +1,16 @@
+<section class="tree-viewer">
+  @for (group of fileGroups; track group.fileName) {
+    <div class="file-section">
+      <div class="file-header">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
+
+      @for (node of group.nodes; track node.name + '-' + $index) {
+        <app-schema-tree-node
+          [node]="node"
+          [searchTerm]="searchTerm"
+          [expandAll]="expandAll"
+          [depth]="0"
+        />
+      }
+    </div>
+  }
+</section>
