@@ -20,10 +20,38 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .cheatsheet-header-copy {
   flex: 1;
+}
+
+.cheatsheet-header:hover {
+  background:
+    linear-gradient(90deg, rgba(115, 180, 255, 0.16), transparent 40%),
+    #213956;
+}
+
+.cheatsheet-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.cheatsheet-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.cheatsheet-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.cheatsheet-body-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .cheatsheet-title {
@@ -35,22 +63,6 @@
 .cheatsheet-subtitle {
   font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-.cheatsheet-toggle {
-  padding: 0.55rem 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-panel);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.cheatsheet-toggle:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
 }
 
 .cheatsheet-sections {

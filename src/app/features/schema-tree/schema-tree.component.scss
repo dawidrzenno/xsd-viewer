@@ -14,6 +14,41 @@
   padding: 1rem;
   background: var(--bg-panel-2);
   border-bottom: 1px solid var(--border);
-  font-weight: 500;
   color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.file-header-title {
+  font-weight: 500;
+}
+
+.file-header-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.file-header:hover {
+  background: #213956;
+}
+
+.file-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.file-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.28s ease;
+}
+
+.file-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.file-body-inner {
+  min-height: 0;
+  overflow: hidden;
 }

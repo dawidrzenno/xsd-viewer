@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 import type { ExampleXmlCommentOptions } from '../../../types';
+import {
+  loadHandbookCollapsedState,
+  saveHandbookCollapsedState,
+} from '../../../storage';
 
 interface RootOption {
   value: string;
@@ -23,7 +27,7 @@ interface CommentOptionGroup {
   templateUrl: './example-xml-panel.component.html',
   styleUrl: './example-xml-panel.component.scss',
 })
-export class ExampleXmlPanelComponent {
+export class ExampleXmlPanelComponent implements OnInit {
   @Input({ required: true }) rootOptions: RootOption[] = [];
   @Input({ required: true }) selectedRoot = '';
   @Input({ required: true }) exampleXml = '';
@@ -36,6 +40,7 @@ export class ExampleXmlPanelComponent {
   }>();
   @Output() readonly commentOptionsBulkChange = new EventEmitter<boolean>();
 
+  protected readonly isCollapsed = signal(false);
   protected readonly commentOptionGroups: CommentOptionGroup[] = [
     {
       title: 'Element metadata',
@@ -60,6 +65,18 @@ export class ExampleXmlPanelComponent {
   ];
 
   protected readonly emptyState = 'Load one or more XSD files to generate example XML.';
+
+  ngOnInit(): void {
+    this.isCollapsed.set(loadHandbookCollapsedState('example-xml'));
+  }
+
+  protected toggleCollapsed(): void {
+    this.isCollapsed.update((value) => {
+      const nextValue = !value;
+      saveHandbookCollapsedState('example-xml', nextValue);
+      return nextValue;
+    });
+  }
 
   protected onRootChange(rootName: string): void {
     this.selectedRootChange.emit(rootName);

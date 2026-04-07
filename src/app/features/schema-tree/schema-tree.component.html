@@ -1,16 +1,33 @@
 <section class="tree-viewer">
   @for (group of fileGroups; track group.fileName) {
     <div class="file-section">
-      <div class="file-header">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
+      <div
+        class="file-header"
+        role="button"
+        tabindex="0"
+        [attr.aria-expanded]="!isFileCollapsed(group.fileName)"
+        (click)="toggleFile(group.fileName)"
+        (keydown.enter)="toggleFile(group.fileName)"
+        (keydown.space)="toggleFile(group.fileName); $event.preventDefault()"
+      >
+        <div class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
+        <div class="file-header-subtitle">
+          Top-level schema definitions parsed from this XSD file.
+        </div>
+      </div>
 
-      @for (node of group.nodes; track node.name + '-' + $index) {
-        <app-schema-tree-node
-          [node]="node"
-          [searchTerm]="searchTerm"
-          [expandAll]="expandAll"
-          [depth]="0"
-        />
-      }
+      <div class="file-body" [class.collapsed]="isFileCollapsed(group.fileName)">
+        <div class="file-body-inner">
+          @for (node of group.nodes; track node.name + '-' + $index) {
+            <app-schema-tree-node
+              [node]="node"
+              [searchTerm]="searchTerm"
+              [expandAll]="expandAll"
+              [depth]="0"
+            />
+          }
+        </div>
+      </div>
     </div>
   }
 </section>

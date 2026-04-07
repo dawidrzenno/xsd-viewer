@@ -2,6 +2,7 @@ import {
   CACHED_FILES_STORAGE_KEY,
   EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY,
   HANDBOOK_STATE_STORAGE_KEY_PREFIX,
+  SCHEMA_FILE_STATE_STORAGE_KEY,
   SELECTED_ROOT_STORAGE_KEY,
 } from "./constants";
 import type { CachedFileEntry, ExampleXmlCommentOptions } from "./types";
@@ -94,5 +95,27 @@ export function saveExampleXmlCommentOptions(options: ExampleXmlCommentOptions):
     );
   } catch (error) {
     console.error("Could not save example XML comment options:", error);
+  }
+}
+
+export function loadSchemaFileCollapsedState(): Record<string, boolean> {
+  try {
+    const raw = window.localStorage.getItem(SCHEMA_FILE_STATE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    console.error("Could not load schema file state:", error);
+    return {};
+  }
+}
+
+export function saveSchemaFileCollapsedState(state: Record<string, boolean>): void {
+  try {
+    window.localStorage.setItem(
+      SCHEMA_FILE_STATE_STORAGE_KEY,
+      JSON.stringify(state)
+    );
+  } catch (error) {
+    console.error("Could not save schema file state:", error);
   }
 }

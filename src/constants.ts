@@ -4,6 +4,7 @@ export const SELECTED_ROOT_STORAGE_KEY = "xsd-viewer:selected-root";
 export const HANDBOOK_STATE_STORAGE_KEY_PREFIX = "xsd-viewer:handbook-state:";
 export const EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY =
   "xsd-viewer:example-xml-comment-options";
+export const SCHEMA_FILE_STATE_STORAGE_KEY = "xsd-viewer:schema-file-state";
 
 export const BUILT_IN_TYPES = new Set([
   "anyuri",
