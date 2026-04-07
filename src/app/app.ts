@@ -9,11 +9,18 @@ import {
 } from '../schema';
 import {
   loadCachedFiles,
+  loadExampleXmlCommentOptions,
   loadSelectedRoot,
   saveCachedFiles,
+  saveExampleXmlCommentOptions,
   saveSelectedRoot,
 } from '../storage';
-import type { CachedFileEntry, ProcessedNode, SchemaModel } from '../types';
+import type {
+  CachedFileEntry,
+  ExampleXmlCommentOptions,
+  ProcessedNode,
+  SchemaModel,
+} from '../types';
 import { generateExampleXml } from '../xml-generator';
 import { ExampleXmlPanelComponent } from './features/example-xml-panel/example-xml-panel.component';
 import { SchemaTreeComponent } from './features/schema-tree/schema-tree.component';
@@ -39,6 +46,16 @@ interface SchemaFileGroup {
   styleUrl: './app.scss',
 })
 export class App {
+  private readonly defaultCommentOptions: ExampleXmlCommentOptions = {
+    elementNames: true,
+    documentation: true,
+    occurrences: true,
+    declaredTypes: true,
+    resolvedTypes: true,
+    attributes: true,
+    restrictions: true,
+  };
+
   protected readonly searchTerm = signal('');
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
@@ -48,6 +65,9 @@ export class App {
   protected readonly selectedRoot = signal('');
   protected readonly exampleXml = signal('');
   protected readonly expandAll = signal(true);
+  protected readonly commentOptions = signal<ExampleXmlCommentOptions>(
+    loadExampleXmlCommentOptions(this.defaultCommentOptions),
+  );
 
   protected readonly rootOptions = computed(() => {
     const rootNames = Array.from(this.schemaModel().elements.keys()).sort((a, b) =>
@@ -110,6 +130,34 @@ export class App {
   protected onRootSelectionChange(rootName: string): void {
     this.selectedRoot.set(rootName);
     this.generateExampleXmlForRoot(rootName);
+  }
+
+  protected onCommentOptionChange(change: {
+    key: keyof ExampleXmlCommentOptions;
+    checked: boolean;
+  }): void {
+    const nextOptions = {
+      ...this.commentOptions(),
+      [change.key]: change.checked,
+    };
+    this.commentOptions.set(nextOptions);
+    saveExampleXmlCommentOptions(nextOptions);
+    this.generateExampleXmlForRoot(this.selectedRoot());
+  }
+
+  protected onCommentOptionsBulkChange(checked: boolean): void {
+    const nextOptions: ExampleXmlCommentOptions = {
+      elementNames: checked,
+      documentation: checked,
+      occurrences: checked,
+      declaredTypes: checked,
+      resolvedTypes: checked,
+      attributes: checked,
+      restrictions: checked,
+    };
+    this.commentOptions.set(nextOptions);
+    saveExampleXmlCommentOptions(nextOptions);
+    this.generateExampleXmlForRoot(this.selectedRoot());
   }
 
   private async restoreCachedFiles(): Promise<void> {
@@ -191,7 +239,9 @@ export class App {
 
     try {
       saveSelectedRoot(rootName);
-      this.exampleXml.set(generateExampleXml(rootName, this.schemaModel()));
+      this.exampleXml.set(
+        generateExampleXml(rootName, this.schemaModel(), this.commentOptions()),
+      );
     } catch (error) {
       console.error('Could not generate example XML:', error);
       this.exampleXml.set(

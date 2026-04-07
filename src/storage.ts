@@ -1,9 +1,10 @@
 import {
   CACHED_FILES_STORAGE_KEY,
+  EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY,
   HANDBOOK_STATE_STORAGE_KEY_PREFIX,
   SELECTED_ROOT_STORAGE_KEY,
 } from "./constants";
-import type { CachedFileEntry } from "./types";
+import type { CachedFileEntry, ExampleXmlCommentOptions } from "./types";
 
 export function loadCachedFiles(): CachedFileEntry[] {
   try {
@@ -61,5 +62,37 @@ export function saveHandbookCollapsedState(handbookId: string, isCollapsed: bool
     );
   } catch (error) {
     console.error("Could not save handbook state:", error);
+  }
+}
+
+export function loadExampleXmlCommentOptions(
+  defaults: ExampleXmlCommentOptions
+): ExampleXmlCommentOptions {
+  try {
+    const raw = window.localStorage.getItem(EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+
+    if (!parsed || typeof parsed !== "object") {
+      return defaults;
+    }
+
+    return {
+      ...defaults,
+      ...parsed,
+    };
+  } catch (error) {
+    console.error("Could not load example XML comment options:", error);
+    return defaults;
+  }
+}
+
+export function saveExampleXmlCommentOptions(options: ExampleXmlCommentOptions): void {
+  try {
+    window.localStorage.setItem(
+      EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY,
+      JSON.stringify(options)
+    );
+  } catch (error) {
+    console.error("Could not save example XML comment options:", error);
   }
 }

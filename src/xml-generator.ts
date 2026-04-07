@@ -1,13 +1,20 @@
 import { VIRTUAL_ROOT_VALUE } from "./constants";
-import { escapeXml, getChildElements, stripNamespace } from "./dom-utils";
-import type { BuildNodeContext, ExampleXmlNode, SchemaModel } from "./types";
+import { escapeXml, getChildElements, getFirstDescendant, stripNamespace } from "./dom-utils";
+import { getDocumentation } from "./schema";
+import type {
+  BuildNodeContext,
+  ExampleXmlCommentOptions,
+  ExampleXmlNode,
+  SchemaModel,
+} from "./types";
 
 export function generateExampleXml(
   rootElementName: string,
-  schemaModel: SchemaModel
+  schemaModel: SchemaModel,
+  commentOptions: ExampleXmlCommentOptions
 ): string {
   if (rootElementName === VIRTUAL_ROOT_VALUE) {
-    return generateVirtualRootXml(schemaModel);
+    return generateVirtualRootXml(schemaModel, commentOptions);
   }
 
   const rootDefinition = schemaModel.elements.get(rootElementName);
@@ -18,7 +25,7 @@ export function generateExampleXml(
   const rootNode = buildExampleNode(rootDefinition.element, schemaModel, {
     depth: 0,
     ancestors: new Set(),
-  });
+  }, commentOptions);
 
   if (rootDefinition.targetNamespace) {
     rootNode.attributes["xmlns"] = rootDefinition.targetNamespace;
@@ -30,7 +37,10 @@ export function generateExampleXml(
   ].join("\n");
 }
 
-function generateVirtualRootXml(schemaModel: SchemaModel): string {
+function generateVirtualRootXml(
+  schemaModel: SchemaModel,
+  commentOptions: ExampleXmlCommentOptions
+): string {
   const topLevelElements = Array.from(schemaModel.elements.entries()).sort(([a], [b]) =>
     a.localeCompare(b)
   );
@@ -44,13 +54,16 @@ function generateVirtualRootXml(schemaModel: SchemaModel): string {
     attributes: {},
     children: [],
     text: "",
+    comments: commentOptions.elementNames
+      ? ["Virtual root generated to include all top-level XSD elements in one XML document."]
+      : [],
   };
 
   topLevelElements.forEach(([, definition]) => {
     const childNode = buildExampleNode(definition.element, schemaModel, {
       depth: 1,
       ancestors: new Set(["Root"]),
-    });
+    }, commentOptions);
 
     if (definition.targetNamespace) {
       childNode.attributes["xmlns"] = definition.targetNamespace;
@@ -68,7 +81,8 @@ function generateVirtualRootXml(schemaModel: SchemaModel): string {
 function buildExampleNode(
   elementDefinition: Element,
   schemaModel: SchemaModel,
-  context: BuildNodeContext
+  context: BuildNodeContext,
+  commentOptions: ExampleXmlCommentOptions
 ): ExampleXmlNode {
   const localName = elementDefinition.getAttribute("name");
   const refName = stripNamespace(elementDefinition.getAttribute("ref"));
@@ -81,7 +95,17 @@ function buildExampleNode(
   if (refName && !localName) {
     const referenced = schemaModel.elements.get(refName);
     if (referenced) {
-      return buildExampleNode(referenced.element, schemaModel, context);
+      const referencedNode = buildExampleNode(
+        referenced.element,
+        schemaModel,
+        context,
+        commentOptions
+      );
+      referencedNode.comments = dedupeComments([
+        ...buildElementComments(elementDefinition, schemaModel, explicitName, commentOptions),
+        ...referencedNode.comments,
+      ]);
+      return referencedNode;
     }
   }
 
@@ -90,6 +114,7 @@ function buildExampleNode(
     attributes: {},
     children: [],
     text: "",
+    comments: buildElementComments(elementDefinition, schemaModel, explicitName, commentOptions),
   };
 
   applyAttributes(node, elementDefinition, schemaModel);
@@ -99,35 +124,68 @@ function buildExampleNode(
   const typeName = stripNamespace(elementDefinition.getAttribute("type"));
 
   if (inlineComplexType) {
+    node.comments = dedupeComments([
+      ...node.comments,
+      ...buildTypeComments(inlineComplexType, schemaModel, "inline complexType", commentOptions),
+    ]);
     applyComplexType(node, inlineComplexType, schemaModel, {
       ...context,
       ancestors: new Set([...context.ancestors, explicitName]),
-    });
+    }, commentOptions);
     return node;
   }
 
   if (inlineSimpleType) {
+    node.comments = dedupeComments([
+      ...node.comments,
+      ...buildTypeComments(inlineSimpleType, schemaModel, "inline simpleType", commentOptions),
+    ]);
     node.text = exampleValueForSimpleType(inlineSimpleType);
     return node;
   }
 
   if (typeName) {
+    if (commentOptions.declaredTypes) {
+      node.comments = dedupeComments([...node.comments, `Type: ${typeName}`]);
+    }
     if (isBuiltInXsdType(typeName, schemaModel)) {
+      node.comments = dedupeComments([
+        ...node.comments,
+        ...buildBuiltInTypeComments(typeName, commentOptions),
+      ]);
       node.text = exampleValueForBuiltInType(typeName);
       return node;
     }
 
     const complexType = schemaModel.complexTypes.get(typeName);
     if (complexType) {
+      node.comments = dedupeComments([
+        ...node.comments,
+        ...buildTypeComments(
+          complexType.element,
+          schemaModel,
+          `complexType ${typeName}`,
+          commentOptions
+        ),
+      ]);
       applyComplexType(node, complexType.element, schemaModel, {
         ...context,
         ancestors: new Set([...context.ancestors, explicitName, typeName]),
-      });
+      }, commentOptions);
       return node;
     }
 
     const simpleType = schemaModel.simpleTypes.get(typeName);
     if (simpleType) {
+      node.comments = dedupeComments([
+        ...node.comments,
+        ...buildTypeComments(
+          simpleType.element,
+          schemaModel,
+          `simpleType ${typeName}`,
+          commentOptions
+        ),
+      ]);
       node.text = exampleValueForSimpleType(simpleType.element);
       return node;
     }
@@ -149,7 +207,7 @@ function buildExampleNode(
           ...context,
           depth: context.depth + 1,
           ancestors: new Set([...context.ancestors, explicitName]),
-        })
+        }, commentOptions)
       );
     });
     return node;
@@ -163,7 +221,8 @@ function applyComplexType(
   node: ExampleXmlNode,
   complexTypeElement: Element,
   schemaModel: SchemaModel,
-  context: BuildNodeContext
+  context: BuildNodeContext,
+  commentOptions: ExampleXmlCommentOptions
 ): void {
   applyAttributes(node, complexTypeElement, schemaModel);
 
@@ -172,11 +231,11 @@ function applyComplexType(
     const extension = getChildElements(complexContent, "extension")[0];
     const restriction = getChildElements(complexContent, "restriction")[0];
     if (extension) {
-      applyComplexTypeExtension(node, extension, schemaModel, context);
+      applyComplexTypeExtension(node, extension, schemaModel, context, commentOptions);
       return;
     }
     if (restriction) {
-      applyComplexTypeExtension(node, restriction, schemaModel, context);
+      applyComplexTypeExtension(node, restriction, schemaModel, context, commentOptions);
       return;
     }
   }
@@ -207,12 +266,12 @@ function applyComplexType(
     }
 
     node.children.push(
-      buildExampleNode(childElement, schemaModel, {
-        ...context,
-        depth: context.depth + 1,
-        ancestors: new Set([...context.ancestors, node.name]),
-      })
-    );
+        buildExampleNode(childElement, schemaModel, {
+          ...context,
+          depth: context.depth + 1,
+          ancestors: new Set([...context.ancestors, node.name]),
+        }, commentOptions)
+      );
   });
 
   if (node.children.length === 0 && !node.text) {
@@ -227,7 +286,8 @@ function applyComplexTypeExtension(
   node: ExampleXmlNode,
   extensionElement: Element,
   schemaModel: SchemaModel,
-  context: BuildNodeContext
+  context: BuildNodeContext,
+  commentOptions: ExampleXmlCommentOptions
 ): void {
   const baseType = stripNamespace(extensionElement.getAttribute("base"));
   if (baseType && !context.ancestors.has(baseType)) {
@@ -238,7 +298,7 @@ function applyComplexTypeExtension(
       applyComplexType(node, baseComplexType.element, schemaModel, {
         ...context,
         ancestors: new Set([...context.ancestors, baseType]),
-      });
+      }, commentOptions);
     } else if (baseSimpleType) {
       node.text = exampleValueForSimpleType(baseSimpleType.element);
     } else if (isBuiltInXsdType(baseType, schemaModel)) {
@@ -258,12 +318,12 @@ function applyComplexTypeExtension(
     }
 
     node.children.push(
-      buildExampleNode(childElement, schemaModel, {
-        ...context,
-        depth: context.depth + 1,
-        ancestors: new Set([...context.ancestors, node.name]),
-      })
-    );
+        buildExampleNode(childElement, schemaModel, {
+          ...context,
+          depth: context.depth + 1,
+          ancestors: new Set([...context.ancestors, node.name]),
+        }, commentOptions)
+      );
   });
 }
 
@@ -297,6 +357,209 @@ function applyAttributes(
     const typeName = stripNamespace(attribute.getAttribute("type")) || "string";
     node.attributes[name] = resolveTypeExampleValue(typeName, schemaModel);
   });
+}
+
+function buildElementComments(
+  elementDefinition: Element,
+  schemaModel: SchemaModel,
+  elementName: string,
+  commentOptions: ExampleXmlCommentOptions
+): string[] {
+  const comments: string[] = [];
+  if (commentOptions.elementNames) {
+    comments.push(`Element: ${elementName}`);
+  }
+  const documentation = getDocumentation(elementDefinition);
+  if (documentation && commentOptions.documentation) {
+    comments.push(`Documentation: ${documentation}`);
+  }
+
+  const minOccurs = elementDefinition.getAttribute("minOccurs");
+  const maxOccurs = elementDefinition.getAttribute("maxOccurs");
+  if ((minOccurs || maxOccurs) && commentOptions.occurrences) {
+    comments.push(`Occurs: ${minOccurs || "1"}..${maxOccurs || "1"}`);
+  }
+
+  const typeName = stripNamespace(elementDefinition.getAttribute("type"));
+  if (typeName && commentOptions.declaredTypes) {
+    comments.push(`Declared type: ${typeName}`);
+  }
+
+  const inlineSimpleType = getChildElements(elementDefinition, "simpleType")[0];
+  const inlineComplexType = getChildElements(elementDefinition, "complexType")[0];
+  const commentOwner = inlineSimpleType || inlineComplexType;
+
+  if (commentOwner) {
+    comments.push(...buildAttributeComments(commentOwner, schemaModel, commentOptions));
+    return dedupeComments(comments);
+  }
+
+  if (typeName) {
+    const complexType = schemaModel.complexTypes.get(typeName);
+    const simpleType = schemaModel.simpleTypes.get(typeName);
+    const resolvedOwner = complexType?.element || simpleType?.element;
+    if (resolvedOwner) {
+      comments.push(...buildAttributeComments(resolvedOwner, schemaModel, commentOptions));
+    }
+  }
+
+  return dedupeComments(comments);
+}
+
+function buildTypeComments(
+  typeElement: Element,
+  schemaModel: SchemaModel,
+  fallbackLabel: string,
+  commentOptions: ExampleXmlCommentOptions
+): string[] {
+  const comments: string[] = [];
+  const typeName = typeElement.getAttribute("name") || fallbackLabel;
+  if (commentOptions.resolvedTypes) {
+    comments.push(`Resolved schema type: ${typeName}`);
+  }
+
+  const documentation = getDocumentation(typeElement);
+  if (documentation && commentOptions.documentation) {
+    comments.push(`Type documentation: ${documentation}`);
+  }
+
+  comments.push(...buildAttributeComments(typeElement, schemaModel, commentOptions));
+  comments.push(...buildRestrictionComments(typeElement, commentOptions));
+
+  return dedupeComments(comments);
+}
+
+function buildBuiltInTypeComments(
+  typeName: string,
+  commentOptions: ExampleXmlCommentOptions
+): string[] {
+  if (!commentOptions.resolvedTypes) {
+    return [];
+  }
+
+  return [`Resolved built-in XSD type: ${stripNamespace(typeName)}`];
+}
+
+function buildAttributeComments(
+  ownerElement: Element,
+  schemaModel: SchemaModel,
+  commentOptions: ExampleXmlCommentOptions
+): string[] {
+  const attributes = Array.from(ownerElement.getElementsByTagName("*")).filter(
+    (element) => element.localName === "attribute"
+  );
+
+  if (attributes.length === 0 || (!commentOptions.attributes && !commentOptions.documentation && !commentOptions.restrictions)) {
+    return [];
+  }
+
+  const requiredAttributes: string[] = [];
+  const optionalAttributes: string[] = [];
+  const documentationComments: string[] = [];
+
+  attributes.forEach((attribute) => {
+    const name =
+      attribute.getAttribute("name") || stripNamespace(attribute.getAttribute("ref"));
+    if (!name) {
+      return;
+    }
+
+    const typeName = stripNamespace(attribute.getAttribute("type")) || "string";
+    const description = `${name} (${typeName})`;
+
+    if (commentOptions.attributes) {
+      if (attribute.getAttribute("use") === "required") {
+        requiredAttributes.push(description);
+      } else {
+        optionalAttributes.push(description);
+      }
+    }
+
+    const documentation = getDocumentation(attribute);
+    if (documentation && commentOptions.documentation) {
+      documentationComments.push(`Attribute ${name}: ${documentation}`);
+    }
+
+    const inlineSimpleType = getChildElements(attribute, "simpleType")[0];
+    if (inlineSimpleType && commentOptions.restrictions) {
+      documentationComments.push(
+        ...buildRestrictionComments(inlineSimpleType, commentOptions).map(
+          (comment) => `${name} ${comment}`
+        ),
+      );
+      return;
+    }
+
+    const simpleType = schemaModel.simpleTypes.get(typeName);
+    if (simpleType && commentOptions.restrictions) {
+      documentationComments.push(
+        ...buildRestrictionComments(simpleType.element, commentOptions).map(
+          (comment) => `${name} ${comment}`,
+        ),
+      );
+    }
+  });
+
+  const comments: string[] = [];
+  if (requiredAttributes.length > 0) {
+    comments.push(`Required attributes: ${requiredAttributes.join(", ")}`);
+  }
+  if (optionalAttributes.length > 0) {
+    comments.push(`Optional attributes available: ${optionalAttributes.join(", ")}`);
+  }
+
+  comments.push(...documentationComments);
+
+  return dedupeComments(comments);
+}
+
+function buildRestrictionComments(
+  typeElement: Element,
+  commentOptions: ExampleXmlCommentOptions
+): string[] {
+  if (!commentOptions.restrictions) {
+    return [];
+  }
+
+  const restriction =
+    getChildElements(typeElement, "restriction")[0] ||
+    getFirstDescendant(typeElement, "restriction");
+  if (!restriction) {
+    return [];
+  }
+
+  const comments: string[] = [];
+  const enumerations = getChildElements(restriction, "enumeration")
+    .map((enumNode) => enumNode.getAttribute("value"))
+    .filter((value): value is string => Boolean(value));
+
+  if (enumerations.length > 0) {
+    comments.push(`Allowed values: ${enumerations.join(", ")}`);
+  }
+
+  const restrictionParts = ["pattern", "minLength", "maxLength", "minInclusive", "maxInclusive"]
+    .map((name) => {
+      const node = getChildElements(restriction, name)[0];
+      const value = node?.getAttribute("value");
+      return value ? `${name}=${value}` : "";
+    })
+    .filter(Boolean);
+
+  if (restrictionParts.length > 0) {
+    comments.push(`Restrictions: ${restrictionParts.join(", ")}`);
+  }
+
+  return comments;
+}
+
+function dedupeComments(comments: string[]): string[] {
+  return Array.from(
+    new Set(
+      comments
+        .map((comment) => comment.trim())
+        .filter(Boolean)
+    )
+  );
 }
 
 function collectChildElementDefinitions(ownerElement: Element): Element[] {
@@ -428,16 +691,27 @@ function isBuiltInXsdType(typeName: string, schemaModel: SchemaModel): boolean {
 
 function stringifyXmlNode(node: ExampleXmlNode, depth = 0): string {
   const indent = "  ".repeat(depth);
+  const comments = node.comments
+    .flatMap((comment) =>
+      comment
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => `${indent}<!-- ${escapeXmlComment(line)} -->`)
+    )
+    .join("\n");
   const attributes = Object.entries(node.attributes)
     .map(([name, value]) => ` ${name}="${escapeXml(value)}"`)
     .join("");
 
+  const prefix = comments ? `${comments}\n` : "";
+
   if (node.children.length === 0 && !node.text) {
-    return `${indent}<${node.name}${attributes} />`;
+    return `${prefix}${indent}<${node.name}${attributes} />`;
   }
 
   if (node.children.length === 0) {
-    return `${indent}<${node.name}${attributes}>${escapeXml(node.text)}</${node.name}>`;
+    return `${prefix}${indent}<${node.name}${attributes}>${escapeXml(node.text)}</${node.name}>`;
   }
 
   const children = node.children
@@ -445,8 +719,15 @@ function stringifyXmlNode(node: ExampleXmlNode, depth = 0): string {
     .join("\n");
 
   if (node.text) {
-    return `${indent}<${node.name}${attributes}>${escapeXml(node.text)}\n${children}\n${indent}</${node.name}>`;
+    return `${prefix}${indent}<${node.name}${attributes}>${escapeXml(node.text)}\n${children}\n${indent}</${node.name}>`;
   }
 
-  return `${indent}<${node.name}${attributes}>\n${children}\n${indent}</${node.name}>`;
+  return `${prefix}${indent}<${node.name}${attributes}>\n${children}\n${indent}</${node.name}>`;
+}
+
+function escapeXmlComment(value: string): string {
+  return value
+    .replaceAll("--", "- -")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

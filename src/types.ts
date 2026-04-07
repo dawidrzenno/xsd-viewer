@@ -57,6 +57,17 @@ export interface ExampleXmlNode {
   attributes: Record<string, string>;
   children: ExampleXmlNode[];
   text: string;
+  comments: string[];
+}
+
+export interface ExampleXmlCommentOptions {
+  elementNames: boolean;
+  documentation: boolean;
+  occurrences: boolean;
+  declaredTypes: boolean;
+  resolvedTypes: boolean;
+  attributes: boolean;
+  restrictions: boolean;
 }
 
 export interface BuildNodeContext {

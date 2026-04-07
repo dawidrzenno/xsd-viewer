@@ -15,7 +15,7 @@
   background:
     linear-gradient(90deg, rgba(115, 180, 255, 0.1), transparent 40%),
     var(--bg-panel-2);
-  text-align: center;
+  text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,7 +27,7 @@
 }
 
 .cheatsheet-title {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 650;
   color: var(--text);
 }
@@ -72,7 +72,7 @@
   text-transform: uppercase;
   color: var(--accent);
   padding: 0.5rem 1rem;
-  text-align: center;
+  text-align: left;
 }
 
 .cheatsheet-grid {

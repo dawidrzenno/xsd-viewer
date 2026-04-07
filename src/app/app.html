@@ -55,7 +55,10 @@
     [rootOptions]="rootOptions()"
     [selectedRoot]="selectedRoot()"
     [exampleXml]="exampleXml()"
+    [commentOptions]="commentOptions()"
     (selectedRootChange)="onRootSelectionChange($event)"
+    (commentOptionChange)="onCommentOptionChange($event)"
+    (commentOptionsBulkChange)="onCommentOptionsBulkChange($event)"
   />
 </div>
 

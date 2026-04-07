@@ -27,5 +27,44 @@
     </div>
   </div>
 
+  <div class="comment-options">
+    <div class="comment-options-sidebar">
+      <div class="comment-options-label">
+        Comment annotations
+      </div>
+
+      <div class="comment-option-actions">
+        <button class="comment-option-action" type="button" (click)="setAllCommentOptions(true)">
+          Select all
+        </button>
+        <button class="comment-option-action" type="button" (click)="setAllCommentOptions(false)">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div class="comment-option-groups">
+      @for (group of commentOptionGroups; track group.title) {
+        <section class="comment-option-group">
+          <div class="comment-option-group-title">{{ group.title }}</div>
+
+          <div class="comment-option-list">
+            @for (option of group.options; track option.key) {
+              <label class="comment-option">
+                <input
+                  #commentCheckbox
+                  type="checkbox"
+                  [checked]="commentOptions[option.key]"
+                  (change)="onCommentOptionChange(option.key, commentCheckbox.checked)"
+                />
+                <span>{{ option.label }}</span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+
   <pre class="example-output"><code class="language-markup" [innerHTML]="(exampleXml || emptyState) | prismHighlight"></code></pre>
 </section>
