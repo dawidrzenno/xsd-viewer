@@ -1,6 +1,6 @@
 @if (isVisible()) {
   <div class="tree-node" [style.--depth]="depth">
-    <div class="node-content">
+    <div class="node-content" [class.has-children]="node.children.length > 0">
       @if (node.children.length > 0) {
         <button
           class="toggle-btn"
@@ -11,13 +11,27 @@
       }
 
       <div class="node-info">
-        <div>
+        <div class="node-headline">
           <span class="node-name">{{ node.name }}</span>
           <span class="node-type">{{ node.type }}</span>
+          @if (node.typeNamespaceUri) {
+            <span class="node-type-namespace">{{ node.typeNamespaceUri }}</span>
+          }
+          @if (restrictionsText()) {
+            <span class="restrictions">{{ restrictionsText() }}</span>
+          }
         </div>
 
         @if (metadataText()) {
           <div class="metadata">{{ metadataText() }}</div>
+        }
+
+        @if (appinfoItems().length > 0) {
+          <div class="appinfo">
+            @for (item of appinfoItems(); track item + '-' + $index) {
+              <div class="appinfo-item">{{ item }}</div>
+            }
+          </div>
         }
 
         @if (attributesText()) {
@@ -33,10 +47,6 @@
         }
       </div>
     </div>
-
-    @if (restrictionsText()) {
-      <div class="restrictions">{{ restrictionsText() }}</div>
-    }
 
     @if (node.children.length > 0 && isExpanded()) {
       <div class="children">

@@ -42,7 +42,7 @@
 .cheatsheet-body {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.28s ease;
+  transition: grid-template-rows 0.32s ease;
 }
 
 .cheatsheet-body.collapsed {
@@ -52,6 +52,17 @@
 .cheatsheet-body-inner {
   min-height: 0;
   overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.22s ease,
+    transform 0.32s ease;
+  will-change: opacity, transform;
+}
+
+.cheatsheet-body.collapsed .cheatsheet-body-inner {
+  opacity: 0;
+  transform: translateY(-0.55rem);
 }
 
 .cheatsheet-title {

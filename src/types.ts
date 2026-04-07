@@ -29,6 +29,10 @@ export interface SchemaFileInfo {
   attributeFormDefault: string;
   version: string;
   schemaId: string;
+  namespaceDeclarations: Array<{
+    prefix: string;
+    uri: string;
+  }>;
 }
 
 export interface ProcessedAttribute {
@@ -50,8 +54,10 @@ export interface Restrictions {
 export interface ProcessedNode {
   name: string;
   type: string;
+  typeNamespaceUri?: string | null;
   documentation: string;
   documentationEntries: string[];
+  appinfoEntries: string[];
   restrictions: Restrictions | null;
   attributes: ProcessedAttribute[] | null;
   children: ProcessedNode[];

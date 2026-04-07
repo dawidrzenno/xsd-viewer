@@ -22,12 +22,7 @@ interface SchemaFileGroup {
 })
 export class SchemaTreeComponent implements OnInit {
   @Input({ required: true }) fileGroups: SchemaFileGroup[] = [];
-  @Input({ required: true }) selectedFileNames: string[] = [];
 
-  @Output() readonly fileSelectionChange = new EventEmitter<{
-    fileName: string;
-    selected: boolean;
-  }>();
   @Output() readonly fileRemove = new EventEmitter<string>();
 
   protected readonly collapsedFiles = signal<Record<string, boolean>>({});
@@ -49,14 +44,6 @@ export class SchemaTreeComponent implements OnInit {
     };
     this.collapsedFiles.set(nextState);
     saveSchemaFileCollapsedState(nextState);
-  }
-
-  protected isFileSelected(fileName: string): boolean {
-    return this.selectedFileNames.includes(fileName);
-  }
-
-  protected onFileSelectionChange(fileName: string, selected: boolean): void {
-    this.fileSelectionChange.emit({ fileName, selected });
   }
 
   protected onFileRemove(fileName: string): void {

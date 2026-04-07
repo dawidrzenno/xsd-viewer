@@ -157,6 +157,12 @@ export function extractSchemaFileInfo(
         attributeFormDefault: schemaElement.getAttribute("attributeFormDefault") || "",
         version: schemaElement.getAttribute("version") || "",
         schemaId: schemaElement.getAttribute("id") || "",
+        namespaceDeclarations: Array.from(schemaElement.attributes)
+          .filter((attribute) => attribute.name === "xmlns" || attribute.name.startsWith("xmlns:"))
+          .map((attribute) => ({
+            prefix: attribute.name === "xmlns" ? "(default)" : attribute.name.slice("xmlns:".length),
+            uri: attribute.value,
+          })),
       };
     } catch (error) {
       console.error(`Error extracting schema root data from ${file.name}:`, error);
@@ -197,6 +203,7 @@ function processType(
   const children: ProcessedNode[] = [];
   const documentationEntries = getDocumentationEntries(typeElement);
   const documentation = documentationEntries[0] || "";
+  const appinfoEntries = getAppinfoEntries(typeElement);
   const restrictions = getRestrictions(typeElement);
   const attributes = getAttributes(typeElement);
 
@@ -209,8 +216,10 @@ function processType(
     children.push({
       name: value,
       type: "enumeration",
+      typeNamespaceUri: null,
       documentation: getDocumentation(enumElement),
       documentationEntries: getDocumentationEntries(enumElement),
+      appinfoEntries: getAppinfoEntries(enumElement),
       restrictions: null,
       attributes: null,
       children: [],
@@ -231,8 +240,10 @@ function processType(
   return {
     name,
     type: typeKind,
+    typeNamespaceUri: resolveTypeNamespaceUri(typeElement),
     documentation,
     documentationEntries,
+    appinfoEntries,
     restrictions,
     attributes,
     children,
@@ -255,8 +266,10 @@ function getNestedElementSummaries(root: Element): ProcessedNode[] {
         summaries.push({
           name: stripNamespace(elementName),
           type: element.getAttribute("type") || "element",
+          typeNamespaceUri: resolveTypeNamespaceUri(element),
           documentation: getDocumentation(element),
           documentationEntries: getDocumentationEntries(element),
+          appinfoEntries: getAppinfoEntries(element),
           restrictions: null,
           attributes: null,
           children: [],
@@ -284,6 +297,68 @@ function getDocumentationEntries(element: Element): string[] {
   return getChildElements(annotation, "documentation")
     .map((documentation) => documentation.textContent?.trim() || "")
     .filter(Boolean);
+}
+
+function getAppinfoEntries(element: Element): string[] {
+  const annotation = getChildElements(element, "annotation")[0];
+  if (!annotation) {
+    return [];
+  }
+
+  const entries: string[] = [];
+
+  getChildElements(annotation, "appinfo").forEach((appinfo) => {
+    const childElements = Array.from(appinfo.children);
+
+    if (childElements.length > 0) {
+      childElements.forEach((childElement) => {
+        entries.push(...extractAppinfoTagValues(childElement));
+      });
+      return;
+    }
+
+    const text = appinfo.textContent?.trim();
+    if (!text) {
+      return;
+    }
+
+    const source = appinfo.getAttribute("source");
+    entries.push(source ? `${source}: ${text}` : text);
+  });
+
+  return entries;
+}
+
+function extractAppinfoTagValues(
+  element: Element,
+  path = element.localName,
+): string[] {
+  const childElements = Array.from(element.children);
+  const entries: string[] = [];
+
+  if (childElements.length === 0) {
+    const text = element.textContent?.trim();
+    if (text) {
+      entries.push(`${path}: ${text}`);
+      return entries;
+    }
+
+    const attributeText = Array.from(element.attributes)
+      .map((attribute) => `${attribute.name}=${attribute.value}`)
+      .join(", ");
+
+    if (attributeText) {
+      entries.push(`${path}: ${attributeText}`);
+    }
+
+    return entries;
+  }
+
+  childElements.forEach((childElement) => {
+    entries.push(...extractAppinfoTagValues(childElement, `${path}/${childElement.localName}`));
+  });
+
+  return entries;
 }
 
 function getRestrictions(element: Element): Restrictions | null {
@@ -355,16 +430,20 @@ function processComplexContentExtension(
   return {
     name,
     type: "complexContent",
+    typeNamespaceUri: null,
     documentation: "",
     documentationEntries: getDocumentationEntries(extensionElement),
+    appinfoEntries: getAppinfoEntries(extensionElement),
     restrictions: null,
     attributes: null,
     children: collectChildElementDefinitions(extensionElement).map((element) => ({
       name:
         element.getAttribute("name") || stripNamespace(element.getAttribute("ref")),
       type: element.getAttribute("type") || "element",
+      typeNamespaceUri: resolveTypeNamespaceUri(element),
       documentation: getDocumentation(element),
       documentationEntries: getDocumentationEntries(element),
+      appinfoEntries: getAppinfoEntries(element),
       restrictions: null,
       attributes: null,
       children: [],
@@ -375,4 +454,14 @@ function processComplexContentExtension(
     fileName,
     baseType: name,
   };
+}
+
+function resolveTypeNamespaceUri(element: Element): string | null {
+  const typeName = element.getAttribute("type");
+  if (!typeName || !typeName.includes(":")) {
+    return null;
+  }
+
+  const [prefix] = typeName.split(":", 1);
+  return element.lookupNamespaceURI(prefix) || null;
 }

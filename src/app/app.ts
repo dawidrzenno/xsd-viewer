@@ -57,7 +57,6 @@ export class App {
   protected readonly errorMessage = signal('');
   protected readonly cachedFiles = signal<CachedFileEntry[]>([]);
   protected readonly fileNames = signal<string[]>([]);
-  protected readonly selectedFileNames = signal<string[]>([]);
   protected readonly processedNodes = signal<ProcessedNode[]>([]);
   protected readonly schemaModel = signal<SchemaModel>(buildSchemaModel([]));
   protected readonly selectedRootFile = signal('');
@@ -137,12 +136,9 @@ export class App {
     }
 
     const mergedEntries = this.mergeCachedEntries(this.cachedFiles(), nextEntries);
-    const selectedNames = new Set(this.selectedFileNames());
-    nextEntries.forEach((file) => selectedNames.add(file.name));
 
     this.cachedFiles.set(mergedEntries);
     this.fileNames.set(mergedEntries.map((file) => file.name));
-    this.selectedFileNames.set(Array.from(selectedNames));
     saveCachedFiles(mergedEntries);
     await this.applySelection();
 
@@ -180,34 +176,10 @@ export class App {
     this.generateExampleXmlForRoot(this.selectedRoot());
   }
 
-  protected isFileSelected(fileName: string): boolean {
-    return this.selectedFileNames().includes(fileName);
-  }
-
-  protected async onFileSelectionChange(change: {
-    fileName: string;
-    selected: boolean;
-  }): Promise<void> {
-    const nextSelected = change.selected
-      ? Array.from(new Set([...this.selectedFileNames(), change.fileName]))
-      : this.selectedFileNames().filter((fileName) => fileName !== change.fileName);
-
-    this.selectedFileNames.set(nextSelected);
-    await this.applySelection();
-  }
-
-  protected async onClearFileSelection(): Promise<void> {
-    this.selectedFileNames.set([]);
-    await this.applySelection();
-  }
-
   protected async onRemoveFile(fileName: string): Promise<void> {
     const nextCachedFiles = this.cachedFiles().filter((file) => file.name !== fileName);
     this.cachedFiles.set(nextCachedFiles);
     this.fileNames.set(nextCachedFiles.map((file) => file.name));
-    this.selectedFileNames.set(
-      this.selectedFileNames().filter((selectedFileName) => selectedFileName !== fileName),
-    );
     saveCachedFiles(nextCachedFiles);
     await this.applySelection();
   }
@@ -218,18 +190,14 @@ export class App {
     this.fileNames.set(cachedFiles.map((file) => file.name));
 
     if (cachedFiles.length === 0) {
-      this.selectedFileNames.set([]);
       return;
     }
 
-    this.selectedFileNames.set(cachedFiles.map((file) => file.name));
     await this.applySelection();
   }
 
   private async applySelection(): Promise<void> {
-    const selectedEntries = this.cachedFiles().filter((file) =>
-      this.selectedFileNames().includes(file.name),
-    );
+    const selectedEntries = this.cachedFiles();
 
     if (selectedEntries.length === 0) {
       this.errorMessage.set('');

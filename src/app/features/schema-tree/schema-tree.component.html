@@ -11,15 +11,7 @@
         (keydown.space)="toggleFile(group.fileName); $event.preventDefault()"
       >
         <div class="file-header-main">
-          <label class="file-header-toggle" (click)="$event.stopPropagation()">
-            <input
-              #fileCheckbox
-              type="checkbox"
-              [checked]="isFileSelected(group.fileName)"
-              (change)="onFileSelectionChange(group.fileName, fileCheckbox.checked)"
-            />
-            <span class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</span>
-          </label>
+          <div class="file-header-title">File: {{ group.fileName }} ({{ group.nodes.length }} types)</div>
 
           <button
             class="file-remove-btn"
@@ -31,11 +23,7 @@
         </div>
 
         <div class="file-header-subtitle">
-          @if (isFileSelected(group.fileName)) {
-            Top-level schema definitions parsed from this XSD file.
-          } @else {
-            This file is cached but currently excluded from the active schema view.
-          }
+          Top-level schema definitions parsed from this XSD file.
         </div>
 
         @if (group.schemaInfo) {
@@ -75,6 +63,21 @@
               </div>
             }
           </div>
+
+          @if (group.schemaInfo.namespaceDeclarations.length > 0) {
+            <div class="file-namespaces">
+              <div class="file-namespaces-label">Namespaces</div>
+
+              <div class="file-namespaces-list">
+                @for (entry of group.schemaInfo.namespaceDeclarations; track entry.prefix + entry.uri) {
+                  <div class="file-namespace-item">
+                    <span class="file-namespace-prefix">{{ entry.prefix }}</span>
+                    <span class="file-namespace-uri">{{ entry.uri }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         }
 
         <div class="file-header-toolbar" (click)="$event.stopPropagation()">
@@ -100,19 +103,13 @@
 
       <div class="file-body" [class.collapsed]="isFileCollapsed(group.fileName)">
         <div class="file-body-inner">
-          @if (group.nodes.length === 0) {
-            <div class="file-empty-state">
-              No parsed nodes available for this file while it is unselected.
-            </div>
-          } @else {
-            @for (node of group.nodes; track node.name + '-' + $index) {
-              <app-schema-tree-node
-                [node]="node"
-                [searchTerm]="getFileSearchTerm(group.fileName)"
-                [expandAll]="isFileExpanded(group.fileName)"
-                [depth]="0"
-              />
-            }
+          @for (node of group.nodes; track node.name + '-' + $index) {
+            <app-schema-tree-node
+              [node]="node"
+              [searchTerm]="getFileSearchTerm(group.fileName)"
+              [expandAll]="isFileExpanded(group.fileName)"
+              [depth]="0"
+            />
           }
         </div>
       </div>

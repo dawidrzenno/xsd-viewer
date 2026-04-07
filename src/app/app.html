@@ -6,22 +6,7 @@
       </div>
 
       <div class="file-input-section">
-        <input type="file" accept=".xsd" multiple (change)="onFileChange($event)" />
-        <div class="file-selection-status">
-          @if (cachedFileNames().length === 0) {
-            No cached schema
-          } @else {
-            Cached: {{ cachedFileNames().length }} files, selected: {{ selectedFileNames().length }}
-          }
-        </div>
-        <button
-          class="control-btn"
-          type="button"
-          [disabled]="selectedFileNames().length === 0"
-          (click)="onClearFileSelection()"
-        >
-          Clear Selection
-        </button>
+        <input class="file-input" type="file" accept=".xsd" multiple (change)="onFileChange($event)" />
       </div>
     </div>
 
@@ -29,15 +14,7 @@
       <div class="file-chip-list">
         @for (fileName of cachedFileNames(); track fileName) {
           <div class="file-chip">
-            <label class="file-chip-toggle">
-              <input
-                #fileCheckbox
-                type="checkbox"
-                [checked]="isFileSelected(fileName)"
-                (change)="onFileSelectionChange({ fileName, selected: fileCheckbox.checked })"
-              />
-              <span>{{ fileName }}</span>
-            </label>
+            <span class="file-chip-name">{{ fileName }}</span>
 
             <button class="file-chip-remove" type="button" (click)="onRemoveFile(fileName)">
               Remove
@@ -61,8 +38,6 @@
   <app-xsd-handbook />
   <app-schema-tree
     [fileGroups]="fileGroups()"
-    [selectedFileNames]="selectedFileNames()"
-    (fileSelectionChange)="onFileSelectionChange($event)"
     (fileRemove)="onRemoveFile($event)"
   />
 
