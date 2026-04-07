@@ -56,24 +56,19 @@ export class HandbookPanelComponent implements OnInit, AfterViewInit {
   }
 
   private sortCardsByHeight(): void {
-    const heightsByTitle = new Map<string, number>();
-
-    this.cardElements.forEach((elementRef) => {
-      const cardTitle = elementRef.nativeElement.dataset['cardTitle'];
-      if (!cardTitle) {
-        return;
-      }
-
-      heightsByTitle.set(cardTitle, elementRef.nativeElement.offsetHeight);
-    });
+    const orderedHeights = this.cardElements.map((elementRef) => elementRef.nativeElement.offsetHeight);
+    let cardIndex = 0;
 
     this.renderedSections = this.sections.map((section) => ({
       ...section,
-      cards: [...section.cards].sort((left, right) => {
-        const leftHeight = heightsByTitle.get(left.title) ?? 0;
-        const rightHeight = heightsByTitle.get(right.title) ?? 0;
-        return leftHeight - rightHeight;
-      }),
+      cards: section.cards
+        .map((card) => {
+          const height = orderedHeights[cardIndex] ?? 0;
+          cardIndex += 1;
+          return { card, height };
+        })
+        .sort((left, right) => left.height - right.height)
+        .map(({ card }) => card),
     }));
   }
 }

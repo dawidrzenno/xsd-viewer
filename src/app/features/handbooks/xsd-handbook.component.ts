@@ -9,8 +9,8 @@ import { HandbookPanelComponent } from './handbook-panel.component';
   template: `
     <app-handbook-panel
       handbookId="xsd"
-      title="XSD Handbook"
-      subtitle="Practical reference for defining schemas, constraints, and reusable types."
+      [title]="'XSD Handbook'"
+      [subtitle]="'Reference for elements in the XML Schema namespace, grouped by what each construct does.'"
       [sections]="sections"
     />
   `,

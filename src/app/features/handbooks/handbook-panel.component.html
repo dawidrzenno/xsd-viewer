@@ -22,7 +22,7 @@
             <div class="cheatsheet-section-title">{{ section.title }}</div>
             <div class="cheatsheet-grid">
               @for (card of section.cards; track card.title) {
-                <div class="cheatsheet-card" #cardElement [attr.data-card-title]="card.title">
+                <div class="cheatsheet-card" #cardElement>
                   <div class="cheatsheet-card-title">{{ card.title }}</div>
                   <pre class="cheatsheet-code"><code class="language-markup" [innerHTML]="card.code | prismHighlight"></code></pre>
                   <div class="cheatsheet-note">{{ card.note }}</div>

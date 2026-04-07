@@ -9,8 +9,8 @@ import { HandbookPanelComponent } from './handbook-panel.component';
   template: `
     <app-handbook-panel
       handbookId="xml"
-      title="XML Handbook"
-      subtitle="Practical reference for reading, editing, and validating XML documents."
+      [title]="'XML Handbook'"
+      [subtitle]="'Practical reference for reading, editing, and validating XML documents.'"
       [sections]="sections"
     />
   `,
