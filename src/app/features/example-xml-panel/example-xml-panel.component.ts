@@ -16,6 +16,7 @@ import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 import type {
   ExampleXmlCommentOptions,
   ExampleXmlFileOption,
+  ExampleXmlGenerationMode,
 } from '../../../types';
 import {
   loadHandbookCollapsedState,
@@ -24,6 +25,11 @@ import {
 
 interface RootOption {
   value: string;
+  label: string;
+}
+
+interface GenerationModeOption {
+  value: ExampleXmlGenerationMode;
   label: string;
 }
 
@@ -51,10 +57,12 @@ export class ExampleXmlPanelComponent implements OnInit {
   @Input({ required: true }) rootOptions: RootOption[] = [];
   @Input({ required: true }) selectedRoot = '';
   @Input({ required: true }) exampleXml = '';
+  @Input({ required: true }) generationMode: ExampleXmlGenerationMode = 'minimal';
   @Input({ required: true }) commentOptions!: ExampleXmlCommentOptions;
 
   @Output() readonly selectedRootFileChange = new EventEmitter<string>();
   @Output() readonly selectedRootChange = new EventEmitter<string>();
+  @Output() readonly generationModeChange = new EventEmitter<ExampleXmlGenerationMode>();
   @Output() readonly commentOptionChange = new EventEmitter<{
     key: keyof ExampleXmlCommentOptions;
     checked: boolean;
@@ -63,6 +71,10 @@ export class ExampleXmlPanelComponent implements OnInit {
 
   protected readonly isCollapsed = signal(false);
   protected readonly outputHeight = signal(0);
+  protected readonly generationModeOptions: GenerationModeOption[] = [
+    { value: 'minimal', label: 'Minimal' },
+    { value: 'maximal', label: 'Maximal' },
+  ];
   protected readonly commentOptionGroups: CommentOptionGroup[] = [
     {
       title: 'Element metadata',
@@ -116,6 +128,12 @@ export class ExampleXmlPanelComponent implements OnInit {
 
   protected onRootChange(rootName: string): void {
     this.selectedRootChange.emit(rootName);
+  }
+
+  protected onGenerationModeChange(mode: string): void {
+    if (mode === 'maximal' || mode === 'minimal') {
+      this.generationModeChange.emit(mode);
+    }
   }
 
   protected onCommentOptionChange(

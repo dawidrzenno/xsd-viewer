@@ -4,6 +4,7 @@ import { getDocumentation } from "./schema";
 import type {
   BuildNodeContext,
   ExampleXmlCommentOptions,
+  ExampleXmlGenerationMode,
   ExampleXmlNode,
   SchemaModel,
 } from "./types";
@@ -12,10 +13,11 @@ export function generateExampleXml(
   rootElementName: string,
   schemaModel: SchemaModel,
   commentOptions: ExampleXmlCommentOptions,
-  rootFileName = ""
+  rootFileName = "",
+  generationMode: ExampleXmlGenerationMode = "minimal",
 ): string {
   if (rootElementName === ALL_NODES_VALUE) {
-    return generateAllNodesXml(schemaModel, commentOptions, rootFileName);
+    return generateAllNodesXml(schemaModel, commentOptions, rootFileName, generationMode);
   }
 
   const rootDefinition = schemaModel.elements.get(rootElementName);
@@ -26,6 +28,7 @@ export function generateExampleXml(
   const rootNode = buildExampleNode(rootDefinition.element, schemaModel, {
     depth: 0,
     ancestors: new Set(),
+    generationMode,
   }, commentOptions);
 
   if (rootDefinition.targetNamespace) {
@@ -41,7 +44,8 @@ export function generateExampleXml(
 function generateAllNodesXml(
   schemaModel: SchemaModel,
   commentOptions: ExampleXmlCommentOptions,
-  fileName: string
+  fileName: string,
+  generationMode: ExampleXmlGenerationMode,
 ): string {
   if (!fileName) {
     throw new Error("A source file must be selected to generate all nodes");
@@ -62,6 +66,7 @@ function generateAllNodesXml(
       {
         depth: 0,
         ancestors: new Set(),
+        generationMode,
       },
       commentOptions
     );
@@ -118,7 +123,7 @@ function buildExampleNode(
     comments: buildElementComments(elementDefinition, schemaModel, explicitName, commentOptions),
   };
 
-  applyAttributes(node, elementDefinition, schemaModel);
+  applyAttributes(node, elementDefinition, schemaModel, context.generationMode);
 
   const inlineComplexType = getChildElements(elementDefinition, "complexType")[0];
   const inlineSimpleType = getChildElements(elementDefinition, "simpleType")[0];
@@ -192,7 +197,7 @@ function buildExampleNode(
     }
   }
 
-  const childElements = collectChildElementDefinitions(elementDefinition);
+  const childElements = collectChildElementDefinitions(elementDefinition, context.generationMode);
   if (childElements.length > 0) {
     childElements.forEach((childElement) => {
       const childName =
@@ -225,7 +230,7 @@ function applyComplexType(
   context: BuildNodeContext,
   commentOptions: ExampleXmlCommentOptions
 ): void {
-  applyAttributes(node, complexTypeElement, schemaModel);
+  applyAttributes(node, complexTypeElement, schemaModel, context.generationMode);
 
   const complexContent = getChildElements(complexTypeElement, "complexContent")[0];
   if (complexContent) {
@@ -252,12 +257,12 @@ function applyComplexType(
       if (baseType) {
         node.text = resolveTypeExampleValue(baseType, schemaModel);
       }
-      applyAttributes(node, contentNode, schemaModel);
+      applyAttributes(node, contentNode, schemaModel, context.generationMode);
       return;
     }
   }
 
-  collectChildElementDefinitions(complexTypeElement).forEach((childElement) => {
+  collectChildElementDefinitions(complexTypeElement, context.generationMode).forEach((childElement) => {
     const childName =
       childElement.getAttribute("name") ||
       stripNamespace(childElement.getAttribute("ref"));
@@ -307,9 +312,9 @@ function applyComplexTypeExtension(
     }
   }
 
-  applyAttributes(node, extensionElement, schemaModel);
+  applyAttributes(node, extensionElement, schemaModel, context.generationMode);
 
-  collectChildElementDefinitions(extensionElement).forEach((childElement) => {
+  collectChildElementDefinitions(extensionElement, context.generationMode).forEach((childElement) => {
     const childName =
       childElement.getAttribute("name") ||
       stripNamespace(childElement.getAttribute("ref"));
@@ -331,7 +336,8 @@ function applyComplexTypeExtension(
 function applyAttributes(
   node: ExampleXmlNode,
   ownerElement: Element,
-  schemaModel: SchemaModel
+  schemaModel: SchemaModel,
+  generationMode: ExampleXmlGenerationMode,
 ): void {
   const attributes = Array.from(ownerElement.getElementsByTagName("*")).filter(
     (element) => element.localName === "attribute"
@@ -339,7 +345,7 @@ function applyAttributes(
 
   attributes.forEach((attribute) => {
     const use = attribute.getAttribute("use");
-    if (use && use !== "required") {
+    if (generationMode === "minimal" && use && use !== "required") {
       return;
     }
 
@@ -563,22 +569,110 @@ function dedupeComments(comments: string[]): string[] {
   );
 }
 
-function collectChildElementDefinitions(ownerElement: Element): Element[] {
-  const groups = ["sequence", "choice", "all"];
-  const childElements: Element[] = [];
+function collectChildElementDefinitions(
+  ownerElement: Element,
+  generationMode: ExampleXmlGenerationMode,
+): Element[] {
+  return collectParticleElements(ownerElement, generationMode);
+}
 
-  groups.forEach((groupName) => {
-    getChildElements(ownerElement, groupName).forEach((group) => {
-      const directElements = getChildElements(group, "element");
-      if (groupName === "choice" && directElements.length > 0) {
-        childElements.push(directElements[0]);
-      } else {
-        childElements.push(...directElements);
-      }
-    });
+function collectParticleElements(
+  ownerElement: Element,
+  generationMode: ExampleXmlGenerationMode,
+): Element[] {
+  const particles: Element[] = [];
+
+  ownerElement.childNodes.forEach((childNode) => {
+    if (!(childNode instanceof Element)) {
+      return;
+    }
+
+    switch (childNode.localName) {
+      case "element":
+        particles.push(...repeatParticle(childNode, generationMode));
+        break;
+      case "sequence":
+      case "all":
+        particles.push(...repeatGroup(childNode, generationMode, false));
+        break;
+      case "choice":
+        particles.push(...repeatGroup(childNode, generationMode, true));
+        break;
+      default:
+        break;
+    }
   });
 
-  return childElements;
+  return particles;
+}
+
+function repeatGroup(
+  groupElement: Element,
+  generationMode: ExampleXmlGenerationMode,
+  chooseSingleBranch: boolean,
+): Element[] {
+  const childParticles = collectParticleElements(groupElement, generationMode);
+  if (childParticles.length === 0) {
+    return [];
+  }
+
+  const groupCount = resolveOccursCount(groupElement, generationMode);
+  if (groupCount === 0) {
+    return [];
+  }
+
+  const particlesToRepeat = chooseSingleBranch ? [childParticles[0]] : childParticles;
+  const result: Element[] = [];
+
+  for (let index = 0; index < groupCount; index += 1) {
+    result.push(...particlesToRepeat);
+  }
+
+  return result;
+}
+
+function repeatParticle(
+  elementDefinition: Element,
+  generationMode: ExampleXmlGenerationMode,
+): Element[] {
+  const count = resolveOccursCount(elementDefinition, generationMode);
+  return Array.from({ length: count }, () => elementDefinition);
+}
+
+function resolveOccursCount(
+  element: Element,
+  generationMode: ExampleXmlGenerationMode,
+): number {
+  const minOccurs = parseOccursValue(element.getAttribute("minOccurs"), 1);
+  const maxOccurs = parseMaxOccursValue(element.getAttribute("maxOccurs"));
+
+  if (generationMode === "minimal") {
+    return minOccurs;
+  }
+
+  return Math.min(Math.max(minOccurs, 1), 1);
+}
+
+function parseOccursValue(value: string | null, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function parseMaxOccursValue(value: string | null): number | null {
+  if (!value) {
+    return 1;
+  }
+
+  if (value === "unbounded") {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 1;
 }
 
 function exampleValueForSimpleType(simpleTypeElement: Element): string {

@@ -47,6 +47,17 @@
         }
       </select>
 
+      <select
+        #generationModeSelect
+        class="example-select"
+        [value]="generationMode"
+        (change)="onGenerationModeChange(generationModeSelect.value)"
+      >
+        @for (option of generationModeOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }} example</option>
+        }
+      </select>
+
       <button class="control-btn" type="button" (click)="copyXml()">Copy XML</button>
     </div>
   </div>

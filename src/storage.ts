@@ -1,12 +1,17 @@
 import {
   CACHED_FILES_STORAGE_KEY,
+  EXAMPLE_XML_GENERATION_MODE_STORAGE_KEY,
   EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY,
   HANDBOOK_STATE_STORAGE_KEY_PREFIX,
   SCHEMA_FILE_STATE_STORAGE_KEY,
   SELECTED_ROOT_FILE_STORAGE_KEY,
   SELECTED_ROOT_STORAGE_KEY,
 } from "./constants";
-import type { CachedFileEntry, ExampleXmlCommentOptions } from "./types";
+import type {
+  CachedFileEntry,
+  ExampleXmlCommentOptions,
+  ExampleXmlGenerationMode,
+} from "./types";
 
 export function loadCachedFiles(): CachedFileEntry[] {
   try {
@@ -113,6 +118,24 @@ export function saveExampleXmlCommentOptions(options: ExampleXmlCommentOptions):
     );
   } catch (error) {
     console.error("Could not save example XML comment options:", error);
+  }
+}
+
+export function loadExampleXmlGenerationMode(): ExampleXmlGenerationMode {
+  try {
+    const value = window.localStorage.getItem(EXAMPLE_XML_GENERATION_MODE_STORAGE_KEY);
+    return value === "maximal" ? "maximal" : "minimal";
+  } catch (error) {
+    console.error("Could not load example XML generation mode:", error);
+    return "minimal";
+  }
+}
+
+export function saveExampleXmlGenerationMode(mode: ExampleXmlGenerationMode): void {
+  try {
+    window.localStorage.setItem(EXAMPLE_XML_GENERATION_MODE_STORAGE_KEY, mode);
+  } catch (error) {
+    console.error("Could not save example XML generation mode:", error);
   }
 }
 

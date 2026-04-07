@@ -10,10 +10,12 @@ import {
 import {
   loadCachedFiles,
   loadExampleXmlCommentOptions,
+  loadExampleXmlGenerationMode,
   loadSelectedRoot,
   loadSelectedRootFile,
   saveCachedFiles,
   saveExampleXmlCommentOptions,
+  saveExampleXmlGenerationMode,
   saveSelectedRoot,
   saveSelectedRootFile,
 } from '../storage';
@@ -21,6 +23,7 @@ import type {
   CachedFileEntry,
   ExampleXmlCommentOptions,
   ExampleXmlFileOption,
+  ExampleXmlGenerationMode,
   ProcessedNode,
   SchemaModel,
 } from '../types';
@@ -70,6 +73,9 @@ export class App {
   protected readonly selectedRootFile = signal('');
   protected readonly selectedRoot = signal('');
   protected readonly exampleXml = signal('');
+  protected readonly exampleXmlGenerationMode = signal<ExampleXmlGenerationMode>(
+    loadExampleXmlGenerationMode(),
+  );
   protected readonly expandAll = signal(true);
   protected readonly commentOptions = signal<ExampleXmlCommentOptions>(
     loadExampleXmlCommentOptions(this.defaultCommentOptions),
@@ -177,6 +183,12 @@ export class App {
     const nextRoot = this.resolveRootForFile(this.schemaModel(), fileName);
     this.selectedRoot.set(nextRoot);
     this.generateExampleXmlForRoot(nextRoot);
+  }
+
+  protected onExampleXmlGenerationModeChange(mode: ExampleXmlGenerationMode): void {
+    this.exampleXmlGenerationMode.set(mode);
+    saveExampleXmlGenerationMode(mode);
+    this.generateExampleXmlForRoot(this.selectedRoot());
   }
 
   protected onCommentOptionChange(change: {
@@ -367,6 +379,7 @@ export class App {
           this.schemaModel(),
           this.commentOptions(),
           this.selectedRootFile(),
+          this.exampleXmlGenerationMode(),
         ),
       );
     } catch (error) {

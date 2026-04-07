@@ -70,6 +70,8 @@ export interface ExampleXmlCommentOptions {
   restrictions: boolean;
 }
 
+export type ExampleXmlGenerationMode = "minimal" | "maximal";
+
 export interface ExampleXmlFileOption {
   value: string;
   label: string;
@@ -78,4 +80,5 @@ export interface ExampleXmlFileOption {
 export interface BuildNodeContext {
   depth: number;
   ancestors: Set<string>;
+  generationMode: ExampleXmlGenerationMode;
 }
