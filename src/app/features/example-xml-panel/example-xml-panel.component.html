@@ -87,7 +87,7 @@
 
               <div class="comment-option-list">
                 @for (option of group.options; track option.key) {
-                  <label class="comment-option">
+                  <label class="comment-option" [class]="'comment-option comment-option-' + option.key">
                     <input
                       #commentCheckbox
                       type="checkbox"
@@ -104,7 +104,7 @@
       </div>
 
       <div class="example-output-shell" [style.height.px]="outputHeight()">
-        <pre #outputContent class="example-output"><code class="language-markup" [innerHTML]="(previewXml || emptyState) | prismHighlight"></code></pre>
+        <pre #outputContent class="example-output"><code class="language-markup" [appXmlCommentOverlay]="previewXml || emptyState" [innerHTML]="(previewXml || emptyState) | prismHighlight"></code></pre>
       </div>
     </div>
   </div>

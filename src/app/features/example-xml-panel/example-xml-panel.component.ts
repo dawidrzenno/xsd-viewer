@@ -12,6 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { ALL_NODES_VALUE } from '../../../constants';
+import { XmlCommentOverlayDirective } from '../../shared/directives/xml-comment-overlay.directive';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
 import type {
   ExampleXmlCommentOptions,
@@ -44,7 +45,7 @@ interface CommentOptionGroup {
 @Component({
   selector: 'app-example-xml-panel',
   standalone: true,
-  imports: [CommonModule, PrismHighlightPipe],
+  imports: [CommonModule, PrismHighlightPipe, XmlCommentOverlayDirective],
   templateUrl: './example-xml-panel.component.html',
   styleUrl: './example-xml-panel.component.scss',
 })

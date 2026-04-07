@@ -126,6 +126,57 @@
   word-break: break-word;
 }
 
+:host ::ng-deep .xml-comment-overlay {
+  display: inline-block;
+  width: calc(100% - (var(--xml-comment-indent, 0) * 1.25rem));
+  padding: 0.02rem 0.35rem;
+  margin: 0.25rem;
+  border-radius: 6px;
+  white-space: normal;
+  box-sizing: border-box;
+  vertical-align: top;
+  margin-left: calc(var(--xml-comment-indent, 0) * 1.25rem);
+}
+
+:host ::ng-deep .token.tag + .xml-comment-overlay {
+  margin-top: 0.75rem;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-element {
+  background: rgba(0, 121, 140, 0.34);
+  color: #d6fbff;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-documentation {
+  background: rgba(143, 91, 0, 0.34);
+  color: #fff0c7;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-occurs {
+  background: rgba(36, 73, 181, 0.34);
+  color: #dde7ff;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-type {
+  background: rgba(144, 34, 173, 0.34);
+  color: #f1dcff;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-attributes {
+  background: rgba(72, 133, 0, 0.34);
+  color: #e0ffd2;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-restrictions {
+  background: rgba(170, 33, 67, 0.34);
+  color: #ffd9dd;
+}
+
+:host ::ng-deep .xml-comment-overlay.overlay-default {
+  background: rgba(86, 91, 110, 0.34);
+  color: #e4ebff;
+}
+
 .comment-options {
   display: flex;
   align-items: stretch;
@@ -137,10 +188,9 @@
 
 .comment-options-sidebar {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
   min-width: 10rem;
 }
 
@@ -157,7 +207,6 @@
   flex: 1;
   align-items: stretch;
   gap: 1.25rem;
-  flex-wrap: wrap;
   border-left: 1px solid rgba(255, 255, 255, 0.14);
   padding-left: 1.25rem;
 }
@@ -196,10 +245,75 @@
   gap: 0.45rem;
   color: var(--text-muted);
   font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
 }
 
 .comment-option input {
   accent-color: var(--accent);
+}
+
+.comment-option-elementNames {
+  color: #d6fbff;
+  background: rgba(0, 121, 140, 0.24);
+  border-color: rgba(59, 214, 240, 0.3);
+}
+
+.comment-option-elementNames input {
+  accent-color: #1fd0ef;
+}
+
+.comment-option-documentation {
+  color: #fff0c7;
+  background: rgba(143, 91, 0, 0.24);
+  border-color: rgba(255, 183, 0, 0.3);
+}
+
+.comment-option-documentation input {
+  accent-color: #ffb700;
+}
+
+.comment-option-occurrences {
+  color: #dde7ff;
+  background: rgba(36, 73, 181, 0.24);
+  border-color: rgba(120, 156, 255, 0.3);
+}
+
+.comment-option-occurrences input {
+  accent-color: #7b9cff;
+}
+
+.comment-option-declaredTypes,
+.comment-option-resolvedTypes {
+  color: #f1dcff;
+  background: rgba(144, 34, 173, 0.24);
+  border-color: rgba(228, 120, 255, 0.3);
+}
+
+.comment-option-declaredTypes input,
+.comment-option-resolvedTypes input {
+  accent-color: #e478ff;
+}
+
+.comment-option-attributes {
+  color: #e0ffd2;
+  background: rgba(72, 133, 0, 0.24);
+  border-color: rgba(168, 235, 61, 0.3);
+}
+
+.comment-option-attributes input {
+  accent-color: #a8eb3d;
+}
+
+.comment-option-restrictions {
+  color: #ffd9dd;
+  background: rgba(170, 33, 67, 0.24);
+  border-color: rgba(255, 103, 152, 0.3);
+}
+
+.comment-option-restrictions input {
+  accent-color: #ff6798;
 }
 
 .comment-option-actions {
