@@ -1,0 +1,30 @@
+<section class="example-panel">
+  <div
+    class="example-panel-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="!isCollapsed()"
+    (click)="toggleCollapsed()"
+    (keydown.enter)="toggleCollapsed()"
+    (keydown.space)="toggleCollapsed(); $event.preventDefault()"
+  >
+    <div>
+      <div class="example-panel-title">Example JSON Converter</div>
+      <div class="example-panel-subtitle">
+        Convert the generated XML example into a JSON representation.
+      </div>
+    </div>
+
+    <div class="example-panel-controls" (click)="$event.stopPropagation()">
+      <button class="control-btn" type="button" (click)="copyJson()">Copy JSON</button>
+    </div>
+  </div>
+
+  <div class="example-panel-body" [class.collapsed]="isCollapsed()">
+    <div class="example-panel-body-inner">
+      <div class="example-output-shell" [style.height.px]="outputHeight()">
+        <pre #outputContent class="example-output"><code class="language-json" [innerHTML]="(previewJson || emptyState) | prismHighlight : 'json'"></code></pre>
+      </div>
+    </div>
+  </div>
+</section>

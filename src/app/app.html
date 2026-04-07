@@ -53,6 +53,7 @@
     (selectedRootChange)="onRootSelectionChange($event)"
     (generationModeChange)="onExampleXmlGenerationModeChange($event)"
   />
+  <app-example-json-panel [exampleXml]="exampleXml()" />
 </div>
 
 @if (isLoading()) {

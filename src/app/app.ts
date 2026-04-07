@@ -28,6 +28,7 @@ import type {
 } from '../types';
 import { generateExampleXml } from '../xml-generator';
 import { ExampleXmlPanelComponent } from './features/example-xml-panel/example-xml-panel.component';
+import { ExampleJsonPanelComponent } from './features/example-json-panel/example-json-panel.component';
 import { SchemaTreeComponent } from './features/schema-tree/schema-tree.component';
 import { XmlHandbookComponent } from './features/handbooks/xml-handbook.component';
 import { XsdHandbookComponent } from './features/handbooks/xsd-handbook.component';
@@ -44,6 +45,7 @@ interface SchemaFileGroup {
   imports: [
     CommonModule,
     ExampleXmlPanelComponent,
+    ExampleJsonPanelComponent,
     SchemaTreeComponent,
     XmlHandbookComponent,
     XsdHandbookComponent,
