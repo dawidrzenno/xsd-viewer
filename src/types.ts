@@ -70,6 +70,11 @@ export interface ExampleXmlCommentOptions {
   restrictions: boolean;
 }
 
+export interface ExampleXmlFileOption {
+  value: string;
+  label: string;
+}
+
 export interface BuildNodeContext {
   depth: number;
   ancestors: Set<string>;

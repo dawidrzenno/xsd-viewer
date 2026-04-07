@@ -68,10 +68,13 @@
 
   <app-xml-handbook />
   <app-example-xml-panel
+    [rootFileOptions]="rootFileOptions()"
+    [selectedRootFile]="selectedRootFile()"
     [rootOptions]="rootOptions()"
     [selectedRoot]="selectedRoot()"
     [exampleXml]="exampleXml()"
     [commentOptions]="commentOptions()"
+    (selectedRootFileChange)="onRootFileSelectionChange($event)"
     (selectedRootChange)="onRootSelectionChange($event)"
     (commentOptionChange)="onCommentOptionChange($event)"
     (commentOptionsBulkChange)="onCommentOptionsBulkChange($event)"

@@ -3,6 +3,7 @@ import {
   EXAMPLE_XML_COMMENT_OPTIONS_STORAGE_KEY,
   HANDBOOK_STATE_STORAGE_KEY_PREFIX,
   SCHEMA_FILE_STATE_STORAGE_KEY,
+  SELECTED_ROOT_FILE_STORAGE_KEY,
   SELECTED_ROOT_STORAGE_KEY,
 } from "./constants";
 import type { CachedFileEntry, ExampleXmlCommentOptions } from "./types";
@@ -35,6 +36,23 @@ export function loadSelectedRoot(): string {
   } catch (error) {
     console.error("Could not load selected root:", error);
     return "";
+  }
+}
+
+export function loadSelectedRootFile(): string {
+  try {
+    return window.localStorage.getItem(SELECTED_ROOT_FILE_STORAGE_KEY) || "";
+  } catch (error) {
+    console.error("Could not load selected root file:", error);
+    return "";
+  }
+}
+
+export function saveSelectedRootFile(fileName: string): void {
+  try {
+    window.localStorage.setItem(SELECTED_ROOT_FILE_STORAGE_KEY, fileName);
+  } catch (error) {
+    console.error("Could not save selected root file:", error);
   }
 }
 

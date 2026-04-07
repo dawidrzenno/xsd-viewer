@@ -11,8 +11,12 @@ import {
   ViewChild,
   signal,
 } from '@angular/core';
+import { ALL_NODES_VALUE } from '../../../constants';
 import { PrismHighlightPipe } from '../../shared/pipes/prism-highlight.pipe';
-import type { ExampleXmlCommentOptions } from '../../../types';
+import type {
+  ExampleXmlCommentOptions,
+  ExampleXmlFileOption,
+} from '../../../types';
 import {
   loadHandbookCollapsedState,
   saveHandbookCollapsedState,
@@ -40,12 +44,16 @@ interface CommentOptionGroup {
 })
 export class ExampleXmlPanelComponent implements OnInit {
   @ViewChild('outputContent') private outputContent?: ElementRef<HTMLElement>;
+  protected readonly allNodesValue = ALL_NODES_VALUE;
 
+  @Input({ required: true }) rootFileOptions: ExampleXmlFileOption[] = [];
+  @Input({ required: true }) selectedRootFile = '';
   @Input({ required: true }) rootOptions: RootOption[] = [];
   @Input({ required: true }) selectedRoot = '';
   @Input({ required: true }) exampleXml = '';
   @Input({ required: true }) commentOptions!: ExampleXmlCommentOptions;
 
+  @Output() readonly selectedRootFileChange = new EventEmitter<string>();
   @Output() readonly selectedRootChange = new EventEmitter<string>();
   @Output() readonly commentOptionChange = new EventEmitter<{
     key: keyof ExampleXmlCommentOptions;
@@ -102,6 +110,10 @@ export class ExampleXmlPanelComponent implements OnInit {
     });
   }
 
+  protected onRootFileChange(fileName: string): void {
+    this.selectedRootFileChange.emit(fileName);
+  }
+
   protected onRootChange(rootName: string): void {
     this.selectedRootChange.emit(rootName);
   }
@@ -115,6 +127,10 @@ export class ExampleXmlPanelComponent implements OnInit {
 
   protected setAllCommentOptions(checked: boolean): void {
     this.commentOptionsBulkChange.emit(checked);
+  }
+
+  protected get previewXml(): string {
+    return this.exampleXml.replace(/^\s*<\?xml[^?]*\?>\s*/i, '');
   }
 
   protected async copyXml(): Promise<void> {

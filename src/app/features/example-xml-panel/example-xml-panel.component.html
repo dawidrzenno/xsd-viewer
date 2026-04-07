@@ -17,8 +17,24 @@
 
     <div class="example-panel-controls" (click)="$event.stopPropagation()">
       <select
+        #rootFileSelect
+        class="example-select"
+        [value]="selectedRootFile"
+        (change)="onRootFileChange(rootFileSelect.value)"
+      >
+        @if (rootFileOptions.length === 0) {
+          <option value="">Choose source file</option>
+        } @else {
+          @for (option of rootFileOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        }
+      </select>
+
+      <select
         #rootSelect
         class="example-select"
+        [class.file-option-selected]="selectedRoot !== '' && selectedRoot !== allNodesValue"
         [value]="selectedRoot"
         (change)="onRootChange(rootSelect.value)"
       >
@@ -77,7 +93,7 @@
       </div>
 
       <div class="example-output-shell" [style.height.px]="outputHeight()">
-        <pre #outputContent class="example-output"><code class="language-markup" [innerHTML]="(exampleXml || emptyState) | prismHighlight"></code></pre>
+        <pre #outputContent class="example-output"><code class="language-markup" [innerHTML]="(previewXml || emptyState) | prismHighlight"></code></pre>
       </div>
     </div>
   </div>

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
-import { VIRTUAL_ROOT_VALUE } from '../constants';
+import { ALL_NODES_VALUE } from '../constants';
 import {
   buildSchemaModel,
   parseCachedFiles,
@@ -11,13 +11,16 @@ import {
   loadCachedFiles,
   loadExampleXmlCommentOptions,
   loadSelectedRoot,
+  loadSelectedRootFile,
   saveCachedFiles,
   saveExampleXmlCommentOptions,
   saveSelectedRoot,
+  saveSelectedRootFile,
 } from '../storage';
 import type {
   CachedFileEntry,
   ExampleXmlCommentOptions,
+  ExampleXmlFileOption,
   ProcessedNode,
   SchemaModel,
 } from '../types';
@@ -64,6 +67,7 @@ export class App {
   protected readonly selectedFileNames = signal<string[]>([]);
   protected readonly processedNodes = signal<ProcessedNode[]>([]);
   protected readonly schemaModel = signal<SchemaModel>(buildSchemaModel([]));
+  protected readonly selectedRootFile = signal('');
   protected readonly selectedRoot = signal('');
   protected readonly exampleXml = signal('');
   protected readonly expandAll = signal(true);
@@ -71,30 +75,32 @@ export class App {
     loadExampleXmlCommentOptions(this.defaultCommentOptions),
   );
 
+  protected readonly rootFileOptions = computed<ExampleXmlFileOption[]>(() =>
+    this.cachedFileNames()
+      .filter((fileName) =>
+        Array.from(this.schemaModel().elements.values()).some((entry) => entry.fileName === fileName),
+      )
+      .map((fileName) => ({
+        value: fileName,
+        label: fileName,
+      })),
+  );
+
   protected readonly rootOptions = computed(() => {
+    const selectedRootFile = this.selectedRootFile();
     const rootNames = Array.from(this.schemaModel().elements.entries())
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([name, entry]) => ({
-        value: name,
-        label: `${name} (${entry.fileName})`,
-      }));
+      .filter(([, entry]) => !selectedRootFile || entry.fileName === selectedRootFile)
+      .map(([name]) => name)
+      .sort((a, b) => a.localeCompare(b));
 
     if (rootNames.length === 0) {
       return [];
     }
 
-    const virtualRoots = this.cachedFileNames()
-      .filter((fileName) =>
-        Array.from(this.schemaModel().elements.values()).some(
-          (entry) => entry.fileName === fileName,
-        ),
-      )
-      .map((fileName) => ({
-        value: `${VIRTUAL_ROOT_VALUE}:${fileName}`,
-        label: `Virtual root (${fileName})`,
-      }));
-
-    return [...virtualRoots, ...rootNames];
+    return [
+      { value: ALL_NODES_VALUE, label: 'File' },
+      ...rootNames.map((name) => ({ value: name, label: name })),
+    ];
   });
 
   protected readonly fileGroups = computed<SchemaFileGroup[]>(() => {
@@ -163,6 +169,14 @@ export class App {
   protected onRootSelectionChange(rootName: string): void {
     this.selectedRoot.set(rootName);
     this.generateExampleXmlForRoot(rootName);
+  }
+
+  protected onRootFileSelectionChange(fileName: string): void {
+    this.selectedRootFile.set(fileName);
+    saveSelectedRootFile(fileName);
+    const nextRoot = this.resolveRootForFile(this.schemaModel(), fileName);
+    this.selectedRoot.set(nextRoot);
+    this.generateExampleXmlForRoot(nextRoot);
   }
 
   protected onCommentOptionChange(change: {
@@ -266,7 +280,9 @@ export class App {
       this.processedNodes.set(processedNodes);
       this.expandAll.set(true);
 
-      const initialRoot = this.resolveInitialRoot(schemaModel);
+      const initialRootFile = this.resolveInitialRootFile(schemaModel);
+      this.selectedRootFile.set(initialRootFile);
+      const initialRoot = this.resolveRootForFile(schemaModel, initialRootFile);
       this.selectedRoot.set(initialRoot);
       this.generateExampleXmlForRoot(initialRoot);
     } catch (error) {
@@ -276,6 +292,7 @@ export class App {
       );
       this.processedNodes.set([]);
       this.schemaModel.set(buildSchemaModel([]));
+      this.selectedRootFile.set('');
       this.selectedRoot.set('');
       this.exampleXml.set('');
     } finally {
@@ -294,31 +311,44 @@ export class App {
     return Array.from(entriesByName.values());
   }
 
-  private resolveInitialRoot(schemaModel: SchemaModel): string {
-    const rootNames = Array.from(schemaModel.elements.keys()).sort((a, b) =>
-      a.localeCompare(b),
+  private resolveInitialRootFile(schemaModel: SchemaModel): string {
+    const fileNames = this.cachedFileNames().filter((fileName) =>
+      Array.from(schemaModel.elements.values()).some((entry) => entry.fileName === fileName),
     );
-    const virtualRootNames = this.cachedFileNames()
-      .filter((fileName) =>
-        Array.from(schemaModel.elements.values()).some((entry) => entry.fileName === fileName),
-      )
-      .map((fileName) => `${VIRTUAL_ROOT_VALUE}:${fileName}`);
-    const availableValues = new Set([...virtualRootNames, ...rootNames]);
 
-    if (availableValues.size === 0) {
+    if (fileNames.length === 0) {
+      return '';
+    }
+
+    const savedRootFile = loadSelectedRootFile();
+    if (savedRootFile && fileNames.includes(savedRootFile)) {
+      saveSelectedRootFile(savedRootFile);
+      return savedRootFile;
+    }
+
+    const nextRootFile = fileNames[0];
+    saveSelectedRootFile(nextRootFile);
+    return nextRootFile;
+  }
+
+  private resolveRootForFile(schemaModel: SchemaModel, fileName: string): string {
+    const rootNames = Array.from(schemaModel.elements.entries())
+      .filter(([, entry]) => entry.fileName === fileName)
+      .map(([name]) => name)
+      .sort((a, b) => a.localeCompare(b));
+
+    if (rootNames.length === 0) {
+      saveSelectedRoot('');
       return '';
     }
 
     const savedRoot = loadSelectedRoot();
-    if (savedRoot && availableValues.has(savedRoot)) {
+    if (savedRoot && (savedRoot === ALL_NODES_VALUE || rootNames.includes(savedRoot))) {
       saveSelectedRoot(savedRoot);
       return savedRoot;
     }
 
-    const nextRoot =
-      virtualRootNames[0] ||
-      rootNames[0] ||
-      '';
+    const nextRoot = ALL_NODES_VALUE;
     saveSelectedRoot(nextRoot);
     return nextRoot;
   }
@@ -332,7 +362,12 @@ export class App {
     try {
       saveSelectedRoot(rootName);
       this.exampleXml.set(
-        generateExampleXml(rootName, this.schemaModel(), this.commentOptions()),
+        generateExampleXml(
+          rootName,
+          this.schemaModel(),
+          this.commentOptions(),
+          this.selectedRootFile(),
+        ),
       );
     } catch (error) {
       console.error('Could not generate example XML:', error);

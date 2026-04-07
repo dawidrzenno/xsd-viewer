@@ -1,4 +1,4 @@
-import { VIRTUAL_ROOT_VALUE } from "./constants";
+import { ALL_NODES_VALUE } from "./constants";
 import { escapeXml, getChildElements, getFirstDescendant, stripNamespace } from "./dom-utils";
 import { getDocumentation } from "./schema";
 import type {
@@ -11,11 +11,11 @@ import type {
 export function generateExampleXml(
   rootElementName: string,
   schemaModel: SchemaModel,
-  commentOptions: ExampleXmlCommentOptions
+  commentOptions: ExampleXmlCommentOptions,
+  rootFileName = ""
 ): string {
-  const virtualRootFileName = parseVirtualRootFileName(rootElementName);
-  if (virtualRootFileName) {
-    return generateVirtualRootXml(schemaModel, commentOptions, virtualRootFileName);
+  if (rootElementName === ALL_NODES_VALUE) {
+    return generateAllNodesXml(schemaModel, commentOptions, rootFileName);
   }
 
   const rootDefinition = schemaModel.elements.get(rootElementName);
@@ -38,45 +38,44 @@ export function generateExampleXml(
   ].join("\n");
 }
 
-function generateVirtualRootXml(
+function generateAllNodesXml(
   schemaModel: SchemaModel,
   commentOptions: ExampleXmlCommentOptions,
   fileName: string
 ): string {
-  const topLevelElements = Array.from(schemaModel.elements.entries())
-    .filter(([, definition]) => definition.fileName === fileName)
-    .sort(([a], [b]) => a.localeCompare(b));
-
-  if (topLevelElements.length === 0) {
-    throw new Error(`No top-level elements were found for file "${fileName}"`);
+  if (!fileName) {
+    throw new Error("A source file must be selected to generate all nodes");
   }
 
-  const virtualRoot: ExampleXmlNode = {
-    name: "Root",
-    attributes: {},
-    children: [],
-    text: "",
-    comments: commentOptions.elementNames
-      ? [`Virtual root generated to include all top-level XSD elements from ${fileName}.`]
-      : [],
-  };
+  const topLevelElements = Array.from(schemaModel.elements.entries())
+    .filter(([, definition]) => definition.fileName === fileName)
+    .sort(([left], [right]) => left.localeCompare(right));
 
-  topLevelElements.forEach(([, definition]) => {
-    const childNode = buildExampleNode(definition.element, schemaModel, {
-      depth: 1,
-      ancestors: new Set(["Root"]),
-    }, commentOptions);
+  if (topLevelElements.length === 0) {
+    throw new Error(`No top-level elements were found for "${fileName}"`);
+  }
+
+  const nodes = topLevelElements.map(([, definition]) => {
+    const node = buildExampleNode(
+      definition.element,
+      schemaModel,
+      {
+        depth: 0,
+        ancestors: new Set(),
+      },
+      commentOptions
+    );
 
     if (definition.targetNamespace) {
-      childNode.attributes["xmlns"] = definition.targetNamespace;
+      node.attributes["xmlns"] = definition.targetNamespace;
     }
 
-    virtualRoot.children.push(childNode);
+    return stringifyXmlNode(node);
   });
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    stringifyXmlNode(virtualRoot),
+    ...nodes,
   ].join("\n");
 }
 
@@ -732,12 +731,4 @@ function escapeXmlComment(value: string): string {
     .replaceAll("--", "- -")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
-}
-
-function parseVirtualRootFileName(rootValue: string): string | null {
-  if (!rootValue.startsWith(`${VIRTUAL_ROOT_VALUE}:`)) {
-    return null;
-  }
-
-  return rootValue.slice(`${VIRTUAL_ROOT_VALUE}:`.length) || null;
 }
