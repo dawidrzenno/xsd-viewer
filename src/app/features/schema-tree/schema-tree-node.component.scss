@@ -17,41 +17,43 @@
   margin: 4px 0;
 }
 
+.node-content.has-children {
+  cursor: pointer;
+}
+
+.node-content.has-children::before {
+  content: '>';
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--bg-panel);
+  transition: all 0.2s ease;
+  flex: 0 0 auto;
+}
+
 .node-content.has-children:hover {
   background-color: var(--bg-hover);
   border-color: var(--border-strong);
   transform: translateX(4px);
 }
 
-.toggle-btn {
-  width: 24px;
-  height: 24px;
-  margin-right: 8px;
-  cursor: pointer;
-  border: none;
-  background: var(--bg-panel);
-  padding: 0;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
+.node-content.has-children:hover::before {
   background: var(--bg-hover);
   color: var(--accent-strong);
 }
 
-.toggle-btn::before {
-  content: '▸';
-  font-size: 10px;
-  transition: transform 0.2s;
+.node-content.has-children.open::before {
+  transform: rotate(90deg);
 }
 
-.toggle-btn.open::before {
-  transform: rotate(90deg);
+.node-content.has-children:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .node-info {
@@ -71,6 +73,16 @@
   color: var(--accent-strong);
   font-weight: 600;
   font-size: 0.95rem;
+}
+
+.node-children-count {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .node-type {
@@ -140,11 +152,34 @@
   border: 1px solid rgba(110, 91, 170, 0.55);
 }
 
+.children-shell {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.32s ease;
+}
+
+.children-shell.collapsed {
+  grid-template-rows: 0fr;
+}
+
 .children {
+  min-height: 0;
+  overflow: hidden;
   margin-left: 2rem;
   border-left: 2px solid var(--border);
   padding-left: 1rem;
   position: relative;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.22s ease,
+    transform 0.32s ease;
+  will-change: opacity, transform;
+}
+
+.children-shell.collapsed .children {
+  opacity: 0;
+  transform: translateY(-0.55rem);
 }
 
 .children::before {

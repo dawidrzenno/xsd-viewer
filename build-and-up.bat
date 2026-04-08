@@ -80,6 +80,18 @@ pushd "%HOMEPAGE_DIR%" || exit /b 1
 REM Switch back into `homepage` because that is where `docker compose` must be run in
 REM this repository layout in order to find the compose file and related build context.
 
+docker compose down --rmi local --remove-orphans
+REM Remove containers created by this compose project and delete the locally built image
+REM before rebuilding, so each run starts from a clean Docker state for this script.
+
+if errorlevel 1 (
+  REM If Docker cleanup fails, stop here instead of attempting a rebuild on stale state.
+  popd
+  REM Restore the prior working directory before exiting on error.
+  exit /b 1
+  REM Return a failing status code so callers can detect the cleanup failure.
+)
+
 docker compose up --build
 REM Build container images as needed and then start the compose application. This command
 REM runs in the foreground and naturally waits until Docker exits or is interrupted.

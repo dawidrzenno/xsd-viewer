@@ -41,6 +41,10 @@ export class SchemaTreeNodeComponent implements OnChanges {
 
   protected readonly documentationItems = computed(() => this.node.documentationEntries);
   protected readonly appinfoItems = computed(() => this.node.appinfoEntries);
+  protected readonly childrenCountLabel = computed(() => {
+    const count = this.node.children.length;
+    return `${count} ${count === 1 ? 'child' : 'children'}`;
+  });
 
   protected readonly metadataText = computed(() => {
     const metadata: string[] = [];

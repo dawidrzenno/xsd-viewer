@@ -1,18 +1,22 @@
 @if (isVisible()) {
   <div class="tree-node" [style.--depth]="depth">
-    <div class="node-content" [class.has-children]="node.children.length > 0">
-      @if (node.children.length > 0) {
-        <button
-          class="toggle-btn"
-          type="button"
-          [class.open]="isExpanded()"
-          (click)="toggleExpanded()"
-        ></button>
-      }
-
+    <div
+      class="node-content"
+      [class.has-children]="node.children.length > 0"
+      [class.open]="node.children.length > 0 && isExpanded()"
+      [attr.role]="node.children.length > 0 ? 'button' : null"
+      [attr.tabindex]="node.children.length > 0 ? 0 : null"
+      [attr.aria-expanded]="node.children.length > 0 ? isExpanded() : null"
+      (click)="node.children.length > 0 && toggleExpanded()"
+      (keydown.enter)="node.children.length > 0 && toggleExpanded()"
+      (keydown.space)="node.children.length > 0 && toggleExpanded(); $event.preventDefault()"
+    >
       <div class="node-info">
         <div class="node-headline">
           <span class="node-name">{{ node.name }}</span>
+          @if (node.children.length > 1) {
+            <span class="node-children-count">{{ childrenCountLabel() }}</span>
+          }
           <span class="node-type">{{ node.type }}</span>
           @if (node.typeNamespaceUri) {
             <span class="node-type-namespace">{{ node.typeNamespaceUri }}</span>
@@ -48,16 +52,18 @@
       </div>
     </div>
 
-    @if (node.children.length > 0 && isExpanded()) {
-      <div class="children">
-        @for (child of node.children; track child.name + '-' + $index) {
-          <app-schema-tree-node
-            [node]="child"
-            [searchTerm]="searchTerm"
-            [expandAll]="expandAll"
-            [depth]="depth + 1"
-          />
-        }
+    @if (node.children.length > 0) {
+      <div class="children-shell" [class.collapsed]="!isExpanded()">
+        <div class="children">
+          @for (child of node.children; track child.name + '-' + $index) {
+            <app-schema-tree-node
+              [node]="child"
+              [searchTerm]="searchTerm"
+              [expandAll]="expandAll"
+              [depth]="depth + 1"
+            />
+          }
+        </div>
       </div>
     }
   </div>
