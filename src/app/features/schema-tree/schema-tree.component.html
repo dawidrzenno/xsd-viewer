@@ -1,4 +1,14 @@
 <section class="tree-viewer">
+  @if (fileGroups.length === 0) {
+    <div class="tree-placeholder" aria-live="polite">
+      <div class="tree-placeholder-kicker">Schema Tree</div>
+      <h2 class="tree-placeholder-title">No XSD file loaded</h2>
+      <p class="tree-placeholder-copy">
+        Choose one or more <code>.xsd</code> files above to inspect their schema definitions here.
+      </p>
+    </div>
+  }
+
   @for (group of fileGroups; track group.fileName) {
     <div class="file-section">
       <div

@@ -5,6 +5,47 @@
   gap: 0.5rem;
 }
 
+.tree-placeholder {
+  padding: 1.4rem 1.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(19, 35, 58, 0.88), rgba(24, 43, 69, 0.68)),
+    linear-gradient(rgba(115, 180, 255, 0.08), rgba(115, 180, 255, 0));
+  box-shadow: var(--shadow);
+}
+
+.tree-placeholder-kicker {
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tree-placeholder-title {
+  margin: 0.3rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tree-placeholder-copy {
+  margin: 0.45rem 0 0;
+  max-width: 42rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.tree-placeholder-copy code {
+  padding: 0.12rem 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 20, 36, 0.6);
+  color: var(--accent-strong);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
 .file-header-actions {
   display: flex;
   align-items: center;

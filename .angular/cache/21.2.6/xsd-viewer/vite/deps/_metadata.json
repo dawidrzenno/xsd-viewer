@@ -1,37 +1,43 @@
 {
-  "hash": "74966018",
-  "configHash": "d4255e30",
-  "lockfileHash": "39eafe29",
-  "browserHash": "444a8372",
+  "hash": "617ca5d1",
+  "configHash": "e2598231",
+  "lockfileHash": "4f68b618",
+  "browserHash": "9b7c6025",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "657b2d69",
+      "fileHash": "612f7fb2",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "3cf8072f",
+      "fileHash": "980fb108",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "5db2f27d",
+      "fileHash": "13b05b33",
       "needsInterop": false
     },
     "prismjs": {
       "src": "../../../../../../node_modules/prismjs/prism.js",
       "file": "prismjs.js",
-      "fileHash": "2487e68a",
+      "fileHash": "14550ab9",
+      "needsInterop": true
+    },
+    "prismjs/components/prism-json": {
+      "src": "../../../../../../node_modules/prismjs/components/prism-json.js",
+      "file": "prismjs_components_prism-json.js",
+      "fileHash": "d5420f49",
       "needsInterop": true
     },
     "prismjs/components/prism-markup": {
       "src": "../../../../../../node_modules/prismjs/components/prism-markup.js",
       "file": "prismjs_components_prism-markup.js",
-      "fileHash": "b5efe5e1",
+      "fileHash": "982f7f16",
       "needsInterop": true
     }
   },
