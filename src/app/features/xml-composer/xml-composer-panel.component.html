@@ -38,7 +38,12 @@
                       <div class="composer-node-title">{{ node.name }}</div>
 
                       @if (!isRootNode(node)) {
-                        <button class="control-btn composer-node-remove" type="button" (click)="removeNode(node.id)">
+                        <button
+                          class="control-btn composer-node-remove"
+                          type="button"
+                          [disabled]="!canRemoveNode(node)"
+                          (click)="removeNode(node.id)"
+                        >
                           Remove
                         </button>
                       }

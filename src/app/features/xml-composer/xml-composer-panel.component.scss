@@ -215,6 +215,13 @@
   border-color: var(--border-strong);
 }
 
+.composer-node-remove:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .composer-node-section {
   margin-top: 0.4rem;
 }

@@ -20,6 +20,7 @@ export interface SchemaModel {
   complexTypes: Map<string, SchemaEntry>;
   simpleTypes: Map<string, SchemaEntry>;
   namespaces: Map<string, string>;
+  relatedFilesByFile: Map<string, string[]>;
   builtInTypes: Set<string>;
 }
 
@@ -29,6 +30,11 @@ export interface SchemaFileInfo {
   attributeFormDefault: string;
   version: string;
   schemaId: string;
+  imports: Array<{
+    kind: string;
+    namespace: string;
+    schemaLocation: string;
+  }>;
   namespaceDeclarations: Array<{
     prefix: string;
     uri: string;

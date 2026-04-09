@@ -179,6 +179,10 @@
   word-break: break-all;
 }
 
+.file-import-separator {
+  color: var(--text-subtle);
+}
+
 .file-header:hover {
   background: #213956;
 }

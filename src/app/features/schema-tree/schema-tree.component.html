@@ -96,6 +96,32 @@
               </div>
             </div>
           }
+
+          @if (group.schemaInfo.imports.length > 0) {
+            <div class="file-namespaces">
+              <div class="file-namespaces-label">Imports</div>
+
+              <div class="file-namespaces-list">
+                @for (entry of group.schemaInfo.imports; track entry.kind + entry.namespace + entry.schemaLocation) {
+                  <div class="file-namespace-item">
+                    <span class="file-namespace-prefix">{{ entry.kind }}</span>
+                    <span class="file-namespace-uri">
+                      @if (entry.namespace) {
+                        {{ entry.namespace }}
+                        @if (entry.schemaLocation) {
+                          <span class="file-import-separator"> -> </span>{{ entry.schemaLocation }}
+                        }
+                      } @else if (entry.schemaLocation) {
+                        {{ entry.schemaLocation }}
+                      } @else {
+                        (no schemaLocation)
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         }
 
       </div>

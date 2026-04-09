@@ -72,6 +72,11 @@ export class XmlComposerPanelComponent implements OnChanges {
       return;
     }
 
+    const nodeToRemove = this.findNodeById(rootNode, nodeId);
+    if (!nodeToRemove || !this.canRemoveNode(nodeToRemove)) {
+      return;
+    }
+
     this.removeNodeRecursive(rootNode, nodeId);
     this.refreshPreview();
   }
@@ -100,6 +105,26 @@ export class XmlComposerPanelComponent implements OnChanges {
 
   protected isRootNode(node: XmlComposerNodeDraft): boolean {
     return this.draftRoot()?.id === node.id;
+  }
+
+  protected canRemoveNode(node: XmlComposerNodeDraft): boolean {
+    const rootNode = this.draftRoot();
+    if (!rootNode || rootNode.id === node.id) {
+      return false;
+    }
+
+    const parentNode = this.findParentNode(rootNode, node.id);
+    if (!parentNode) {
+      return false;
+    }
+
+    const childDefinition = parentNode.definition.children.find((child) => child.name === node.name);
+    if (!childDefinition) {
+      return true;
+    }
+
+    const siblingCount = parentNode.children.filter((child) => child.name === node.name).length;
+    return siblingCount > childDefinition.minOccurs;
   }
 
   protected shouldRenderNode(node: XmlComposerNodeDraft): boolean {
@@ -187,6 +212,39 @@ export class XmlComposerPanelComponent implements OnChanges {
     }
 
     return parentNode.children.some((child) => this.removeNodeRecursive(child, nodeId));
+  }
+
+  private findNodeById(node: XmlComposerNodeDraft, targetId: string): XmlComposerNodeDraft | null {
+    if (node.id === targetId) {
+      return node;
+    }
+
+    for (const child of node.children) {
+      const matchingNode = this.findNodeById(child, targetId);
+      if (matchingNode) {
+        return matchingNode;
+      }
+    }
+
+    return null;
+  }
+
+  private findParentNode(
+    node: XmlComposerNodeDraft,
+    targetChildId: string,
+  ): XmlComposerNodeDraft | null {
+    if (node.children.some((child) => child.id === targetChildId)) {
+      return node;
+    }
+
+    for (const child of node.children) {
+      const parentNode = this.findParentNode(child, targetChildId);
+      if (parentNode) {
+        return parentNode;
+      }
+    }
+
+    return null;
   }
 
   private collectAncestorNames(node: XmlComposerNodeDraft): Set<string> {

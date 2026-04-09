@@ -63,6 +63,7 @@ export function createEmptySchemaModel(): SchemaModel {
     complexTypes: new Map(),
     simpleTypes: new Map(),
     namespaces: new Map(),
+    relatedFilesByFile: new Map(),
     builtInTypes: new Set(BUILT_IN_TYPES),
   };
 }
@@ -70,6 +71,7 @@ export function createEmptySchemaModel(): SchemaModel {
 export function buildSchemaModel(docs: LoadedXsdDoc[]): SchemaModel {
   const model = createEmptySchemaModel();
   model.docs = docs;
+  const docNames = docs.map(({ name }) => name);
 
   for (const { doc, name } of docs) {
     const schemaElement = doc.documentElement;
@@ -79,6 +81,7 @@ export function buildSchemaModel(docs: LoadedXsdDoc[]): SchemaModel {
 
     const targetNamespace = schemaElement.getAttribute("targetNamespace") || "";
     model.namespaces.set(name, targetNamespace);
+    model.relatedFilesByFile.set(name, collectRelatedSchemaFiles(schemaElement, name, docNames));
 
     getChildElements(schemaElement, "element").forEach((element) => {
       const elementName = element.getAttribute("name");
@@ -115,6 +118,53 @@ export function buildSchemaModel(docs: LoadedXsdDoc[]): SchemaModel {
   }
 
   return model;
+}
+
+function collectRelatedSchemaFiles(
+  schemaElement: Element,
+  currentFileName: string,
+  availableFileNames: string[],
+): string[] {
+  const relatedFiles = new Set<string>([currentFileName]);
+
+  ["import", "include", "redefine"].forEach((tagName) => {
+    getChildElements(schemaElement, tagName).forEach((entry) => {
+      const resolvedFileName = resolveSchemaLocation(entry.getAttribute("schemaLocation"), availableFileNames);
+      if (resolvedFileName) {
+        relatedFiles.add(resolvedFileName);
+      }
+    });
+  });
+
+  return Array.from(relatedFiles);
+}
+
+function resolveSchemaLocation(
+  schemaLocation: string | null,
+  availableFileNames: string[],
+): string | null {
+  if (!schemaLocation) {
+    return null;
+  }
+
+  const normalizedLocation = normalizeSchemaPath(schemaLocation);
+  const directMatch = availableFileNames.find((fileName) => normalizeSchemaPath(fileName) === normalizedLocation);
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const locationFileName = extractFileName(schemaLocation);
+  return availableFileNames.find((fileName) => extractFileName(fileName) === locationFileName) ?? null;
+}
+
+function normalizeSchemaPath(value: string): string {
+  return value.replace(/\\/g, "/").trim().toLowerCase();
+}
+
+function extractFileName(value: string): string {
+  const normalized = normalizeSchemaPath(value);
+  const parts = normalized.split("/");
+  return parts[parts.length - 1] || normalized;
 }
 
 export function processXsdDocs(docs: LoadedXsdDoc[]): ProcessedNode[] {
@@ -157,6 +207,13 @@ export function extractSchemaFileInfo(
         attributeFormDefault: schemaElement.getAttribute("attributeFormDefault") || "",
         version: schemaElement.getAttribute("version") || "",
         schemaId: schemaElement.getAttribute("id") || "",
+        imports: ["import", "include", "redefine"].flatMap((tagName) =>
+          getChildElements(schemaElement, tagName).map((entry) => ({
+            kind: tagName,
+            namespace: entry.getAttribute("namespace") || "",
+            schemaLocation: entry.getAttribute("schemaLocation") || "",
+          })),
+        ),
         namespaceDeclarations: Array.from(schemaElement.attributes)
           .filter((attribute) => attribute.name === "xmlns" || attribute.name.startsWith("xmlns:"))
           .map((attribute) => ({
