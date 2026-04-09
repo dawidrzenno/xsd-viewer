@@ -1,0 +1,136 @@
+<section class="composer-panel">
+  <div class="composer-panel-header">
+    <div>
+      <div class="composer-panel-title">XML Composer</div>
+      <div class="composer-panel-subtitle">
+        Compose XML instances from allowed elements and attributes defined in the loaded schema.
+      </div>
+    </div>
+
+    <div class="composer-panel-controls" (click)="$event.stopPropagation()">
+      <select
+        #fileSelect
+        class="composer-select"
+        [value]="selectedFile()"
+        (change)="onFileChange(fileSelect.value)"
+      >
+        @if (rootFileOptions.length === 0) {
+          <option value="">Choose source file</option>
+        } @else {
+          @for (option of rootFileOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="composer-panel-body">
+    <div class="composer-workspace">
+      <div class="composer-editor">
+          <div class="composer-editor-heading">Composer Tree</div>
+          @if (draftRoot(); as rootNode) {
+            <ng-template #nodeEditor let-node let-depth="depth">
+              @if (shouldRenderNode(node)) {
+                <div class="composer-tree-node" [style.--depth]="1">
+                  <section class="composer-node-content">
+                    <div class="composer-node-header">
+                      <div class="composer-node-title">{{ node.name }}</div>
+
+                      @if (!isRootNode(node)) {
+                        <button class="control-btn composer-node-remove" type="button" (click)="removeNode(node.id)">
+                          Remove
+                        </button>
+                      }
+                    </div>
+
+                    @if (node.attributes.length > 0) {
+                      <div class="composer-node-section">
+                        <div class="composer-node-section-title">Attributes</div>
+                        <div class="composer-attribute-list">
+                          @for (attribute of node.attributes; track attribute.name + '-' + $index) {
+                            <label class="composer-attribute-item">
+                              <span class="composer-attribute-name">
+                                {{ attribute.name }}@if (attribute.required) { <span class="composer-required">*</span> }
+                              </span>
+                              <input
+                                class="composer-input"
+                                [value]="attribute.value"
+                                (input)="updateAttribute(node, attribute.name, $any($event.target).value)"
+                              />
+                            </label>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    @if (node.definition.allowsText) {
+                      <div class="composer-node-section">
+                        <div class="composer-node-section-title">Text Value</div>
+                        <textarea
+                          class="composer-textarea"
+                          rows="2"
+                          [value]="node.text"
+                          (input)="updateText(node, $any($event.target).value)"
+                        ></textarea>
+                      </div>
+                    }
+
+                    @if (availableChildren(node).length > 0) {
+                      <div class="composer-node-section">
+                        <div class="composer-node-section-title">Add Allowed Child</div>
+                        <div class="composer-add-actions">
+                          @for (childDefinition of availableChildren(node); track childDefinition.name + '-' + $index) {
+                            <button class="composer-add-btn" type="button" (click)="addChild(node, childDefinition)">
+                              + {{ childDefinition.name }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </section>
+
+                  @if (node.children.length > 0) {
+                    <div class="composer-node-children">
+                      @for (child of node.children; track child.id) {
+                        <ng-container *ngTemplateOutlet="nodeEditor; context: { $implicit: child, depth: (depth ?? 0) + 1 }"></ng-container>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="composer-virtual-root-children">
+                  @for (child of node.children; track child.id) {
+                    <ng-container *ngTemplateOutlet="nodeEditor; context: { $implicit: child, depth: 0 }"></ng-container>
+                  }
+                </div>
+              }
+            </ng-template>
+
+            <div class="composer-tree-scroll">
+              <ng-container *ngTemplateOutlet="nodeEditor; context: { $implicit: rootNode, depth: 0 }"></ng-container>
+            </div>
+          } @else {
+            <div class="composer-placeholder">{{ emptyState }}</div>
+          }
+        </div>
+
+      <div class="composer-preview-grid">
+        <div class="composer-preview">
+          <div class="composer-preview-heading composer-preview-heading-with-actions">
+            <span>Generated XML</span>
+            <button class="control-btn composer-preview-copy-btn" type="button" (click)="copyXml()">Copy XML</button>
+          </div>
+          <pre class="composer-preview-output"><code class="language-markup" [innerHTML]="previewXml() | prismHighlight"></code></pre>
+        </div>
+
+        <app-example-json-panel
+          [exampleXml]="previewXml()"
+          title="Generated JSON"
+          subtitle=""
+          [embedded]="true"
+        />
+      </div>
+    </div>
+  </div>
+</section>

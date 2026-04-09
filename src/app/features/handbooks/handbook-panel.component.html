@@ -1,37 +1,27 @@
 <section class="cheatsheet-panel">
-  <div
-    class="cheatsheet-header"
-    role="button"
-    tabindex="0"
-    [attr.aria-expanded]="!isCollapsed()"
-    (click)="toggleCollapsed()"
-    (keydown.enter)="toggleCollapsed()"
-    (keydown.space)="toggleCollapsed(); $event.preventDefault()"
-  >
+  <div class="cheatsheet-header">
     <div class="cheatsheet-header-copy">
       <div class="cheatsheet-title">{{ title }}</div>
       <div class="cheatsheet-subtitle">{{ subtitle }}</div>
     </div>
   </div>
 
-  <div class="cheatsheet-body" [class.collapsed]="isCollapsed()">
-    <div class="cheatsheet-body-inner">
-      <div class="cheatsheet-sections">
-        @for (section of renderedSections.length ? renderedSections : sections; track section.title) {
-          <section class="cheatsheet-section">
-            <div class="cheatsheet-section-title">{{ section.title }}</div>
-            <div class="cheatsheet-grid">
-              @for (card of section.cards; track card.title) {
-                <div class="cheatsheet-card" #cardElement>
-                  <div class="cheatsheet-card-title">{{ card.title }}</div>
-                  <pre class="cheatsheet-code"><code class="language-markup" [innerHTML]="card.code | prismHighlight"></code></pre>
-                  <div class="cheatsheet-note">{{ card.note }}</div>
-                </div>
-              }
-            </div>
-          </section>
-        }
-      </div>
+  <div class="cheatsheet-body">
+    <div class="cheatsheet-sections">
+      @for (section of sections; track section.title) {
+        <section class="cheatsheet-section">
+          <div class="cheatsheet-section-title">{{ section.title }}</div>
+          <div class="cheatsheet-grid">
+            @for (card of section.cards; track card.title) {
+              <article class="cheatsheet-card">
+                <div class="cheatsheet-card-title">{{ card.title }}</div>
+                <pre class="cheatsheet-code"><code class="language-markup" [innerHTML]="card.code | prismHighlight"></code></pre>
+                <div class="cheatsheet-note">{{ card.note }}</div>
+              </article>
+            }
+          </div>
+        </section>
+      }
     </div>
   </div>
 </section>

@@ -2,61 +2,43 @@
   <div class="header-content">
     <div class="header-main">
       <div class="title-section">
-        <h1>XSD Schema Viewer</h1>
+        <h1><a class="title-link" routerLink="/files">XSD Schema Viewer</a></h1>
       </div>
 
-      <div class="file-input-section">
-        <input class="file-input" type="file" accept=".xsd" multiple (change)="onFileChange($event)" />
-      </div>
+      @if (!isHandbookRoute()) {
+        <div class="file-input-section">
+          <input class="file-input" type="file" accept=".xsd" multiple (change)="workspace.onFileChange($event)" />
+        </div>
+      }
     </div>
-
-    @if (cachedFileNames().length > 0) {
-      <div class="file-chip-list">
-        @for (fileName of cachedFileNames(); track fileName) {
-          <div class="file-chip">
-            <span class="file-chip-name">{{ fileName }}</span>
-
-            <button class="file-chip-remove" type="button" (click)="onRemoveFile(fileName)">
-              Remove
-            </button>
-          </div>
-        }
-      </div>
-    }
-
+    <nav class="header-nav" aria-label="Primary">
+      <a class="header-nav-link" routerLink="/files" routerLinkActive="active">
+        Files
+      </a>
+      <a class="header-nav-link" routerLink="/composer" routerLinkActive="active">
+        XML Composer
+      </a>
+      <a class="header-nav-link" routerLink="/handbooks/xsd" routerLinkActive="active">
+        XSD Handbook
+      </a>
+      <a class="header-nav-link" routerLink="/handbooks/xml" routerLinkActive="active">
+        XML Handbook
+      </a>
+    </nav>
   </div>
 </header>
 
-@if (errorMessage()) {
+@if (workspace.errorMessage()) {
   <div class="app-shell">
-    <div class="error-message">{{ errorMessage() }}</div>
+    <div class="error-message">{{ workspace.errorMessage() }}</div>
   </div>
 }
 
-<div class="app-shell">
-
-  <app-xsd-handbook />
-  <app-schema-tree
-    [fileGroups]="fileGroups()"
-    (fileRemove)="onRemoveFile($event)"
-  />
-
-  <app-xml-handbook />
-  <app-example-xml-panel
-    [rootFileOptions]="rootFileOptions()"
-    [selectedRootFile]="selectedRootFile()"
-    [rootOptions]="rootOptions()"
-    [selectedRoot]="selectedRoot()"
-    [exampleXml]="exampleXml()"
-    [generationMode]="exampleXmlGenerationMode()"
-    (selectedRootFileChange)="onRootFileSelectionChange($event)"
-    (selectedRootChange)="onRootSelectionChange($event)"
-    (generationModeChange)="onExampleXmlGenerationModeChange($event)"
-  />
-  <app-example-json-panel [exampleXml]="exampleXml()" />
+<div class="app-shell" [class.handbook-shell]="isHandbookRoute()">
+  <router-outlet />
 </div>
 
-@if (isLoading()) {
+@if (workspace.isLoading()) {
   <div class="loader">
     <div class="loader-content">
       <div class="spinner"></div>

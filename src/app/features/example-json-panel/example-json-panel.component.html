@@ -1,18 +1,15 @@
-<section class="example-panel">
+<section class="example-panel" [class.example-panel-embedded]="embedded">
   <div
     class="example-panel-header"
-    role="button"
-    tabindex="0"
-    [attr.aria-expanded]="!isCollapsed()"
-    (click)="toggleCollapsed()"
-    (keydown.enter)="toggleCollapsed()"
-    (keydown.space)="toggleCollapsed(); $event.preventDefault()"
+    [class.example-panel-header-embedded]="embedded"
   >
     <div>
-      <div class="example-panel-title">Example JSON Converter</div>
-      <div class="example-panel-subtitle">
-        Convert the generated XML example into a JSON representation.
-      </div>
+      <div class="example-panel-title" [class.example-panel-title-embedded]="embedded">{{ title }}</div>
+      @if (subtitle) {
+        <div class="example-panel-subtitle">
+          {{ subtitle }}
+        </div>
+      }
     </div>
 
     <div class="example-panel-controls" (click)="$event.stopPropagation()">
@@ -20,11 +17,7 @@
     </div>
   </div>
 
-  <div class="example-panel-body" [class.collapsed]="isCollapsed()">
-    <div class="example-panel-body-inner">
-      <div class="example-output-shell" [style.height.px]="outputHeight()">
-        <pre #outputContent class="example-output"><code class="language-json" [innerHTML]="(previewJson || emptyState) | prismHighlight : 'json'"></code></pre>
-      </div>
-    </div>
+  <div class="example-panel-body">
+    <pre class="example-output"><code class="language-json" [innerHTML]="previewJson | prismHighlight : 'json'"></code></pre>
   </div>
 </section>

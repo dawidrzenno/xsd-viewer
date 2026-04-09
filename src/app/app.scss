@@ -16,7 +16,7 @@
 .header-content {
   margin: 0 auto;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 1rem;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -24,12 +24,14 @@
 
 .header-main {
   display: flex;
-  flex-direction: row;
+  align-items: center;
+  flex: 1 1 auto;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .title-section {
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 h1 {
@@ -39,9 +41,40 @@ h1 {
   margin: 0;
 }
 
+.title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.header-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.header-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.header-nav-link:hover,
+.header-nav-link.active {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
 .file-input-section {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
@@ -99,43 +132,6 @@ h1 {
   border-color: var(--border-strong);
 }
 
-.file-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.file-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(19, 35, 58, 0.75);
-}
-
-.file-chip-name {
-  color: var(--text);
-  font-size: 0.82rem;
-}
-
-.file-chip-remove {
-  padding: 0.2rem 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.75rem;
-}
-
-.file-chip-remove:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
-}
-
 .control-btn {
   min-height: 38px;
   padding: 8px 16px;
@@ -159,6 +155,10 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.handbook-shell {
+  max-width: 110rem;
 }
 
 .error-message {
@@ -213,5 +213,10 @@ h1 {
   .header-main {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .header-nav {
+    margin-left: 0;
+    justify-content: flex-start;
   }
 }

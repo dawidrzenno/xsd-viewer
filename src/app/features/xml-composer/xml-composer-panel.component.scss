@@ -1,0 +1,338 @@
+.composer-panel {
+  min-width: 0;
+  padding: 0 1rem 1.5rem;
+}
+
+.composer-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0 0.75rem;
+}
+
+.composer-panel-title {
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.composer-panel-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.composer-panel-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.composer-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0.6rem 2.2rem 0.6rem 0.8rem;
+  background-color: var(--bg-panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6' fill='white'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 10px 6px;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+
+.composer-panel-body {
+  min-width: 0;
+}
+
+.composer-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 0;
+}
+
+.composer-editor,
+.composer-preview,
+.composer-preview-grid {
+  min-width: 0;
+  height: 80vh;
+  min-height: 0;
+}
+
+.composer-editor {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.composer-editor-heading {
+  display: flex;
+  align-items: center;
+  min-height: 3.75rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(115, 180, 255, 0.12), transparent 40%),
+    var(--bg-panel-2);
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.composer-tree-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.composer-preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  border-left: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(15, 27, 45, 0.95), rgba(10, 20, 36, 0.92));
+}
+
+.composer-preview {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.composer-preview-grid app-example-json-panel {
+  display: block;
+  min-width: 0;
+  height: 100%;
+  border-left: 1px solid var(--border);
+}
+
+.composer-preview-heading {
+  display: flex;
+  align-items: center;
+  height: 3.75rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, rgba(115, 180, 255, 0.12), transparent 40%),
+    var(--bg-panel-2);
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.composer-preview-heading-with-actions {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.composer-preview-copy-btn {
+  min-height: 1.9rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.composer-preview-copy-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.composer-preview-output {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1.25rem;
+  background: rgba(6, 13, 24, 0.94);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.composer-preview-output code {
+  display: block;
+  min-height: 1.55em;
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.composer-tree-node {
+  margin: 0.5rem 0 0.5rem calc(1.5rem * var(--depth, 0));
+}
+
+.composer-node-content {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(39, 66, 97, 0.45);
+  background: rgba(15, 27, 45, 0.62);
+  margin: 4px 0;
+}
+
+.composer-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.composer-node-title {
+  color: var(--accent-strong);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.composer-node-remove {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.composer-node-remove:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.composer-node-section {
+  margin-top: 0.4rem;
+}
+
+.composer-node-section-title {
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.composer-attribute-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.6rem;
+}
+
+.composer-attribute-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.composer-attribute-name {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.composer-required {
+  color: #ffb4b4;
+}
+
+.composer-input,
+.composer-textarea {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  box-sizing: border-box;
+  border: 1px solid rgba(39, 66, 97, 0.45);
+  border-radius: 6px;
+  background: rgba(10, 20, 36, 0.5);
+  color: var(--text);
+  font: inherit;
+}
+
+.composer-textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.composer-add-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.composer-add-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.composer-add-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.composer-node-children {
+  margin-top: 0;
+  margin-left: 2rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border);
+  position: relative;
+}
+
+.composer-node-children::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--border);
+  opacity: 0.5;
+}
+
+.composer-placeholder {
+  padding: 1.25rem;
+  color: var(--text-muted);
+}
+
+.composer-virtual-root-children > * + * {
+  margin-top: 0;
+}
+
+@media (max-width: 1100px) {
+  .composer-panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .composer-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .composer-preview-grid {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    grid-template-columns: 1fr;
+  }
+
+  .composer-preview-grid app-example-json-panel {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .composer-panel {
+    padding: 0 0.75rem 1.25rem;
+  }
+}

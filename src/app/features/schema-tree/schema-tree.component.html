@@ -102,14 +102,46 @@
 
       <div class="file-body" [class.collapsed]="isFileCollapsed(group.fileName)">
         <div class="file-body-inner">
-          @for (node of group.nodes; track node.name + '-' + $index) {
-            <app-schema-tree-node
-              [node]="node"
-              searchTerm=""
-              [expandAll]="isFileExpanded(group.fileName)"
-              [depth]="0"
-            />
-          }
+          <div
+            #fileBodyGrid
+            class="file-body-grid"
+            [style.grid-template-columns]="gridTemplateColumns()"
+          >
+            <div class="file-tree-panel">
+              <div class="file-panel-heading">Schema Tree</div>
+              <div class="file-tree-scroll">
+                @for (node of group.nodes; track node.name + '-' + $index) {
+                  <app-schema-tree-node
+                    [node]="node"
+                    searchTerm=""
+                    [expandAll]="isFileExpanded(group.fileName)"
+                    [depth]="0"
+                  />
+                }
+              </div>
+            </div>
+
+            <div
+              class="file-pane-resizer"
+              role="separator"
+              aria-orientation="vertical"
+              tabindex="0"
+              [attr.aria-valuemin]="25"
+              [attr.aria-valuemax]="75"
+              [attr.aria-valuenow]="treePaneWidth()"
+              (pointerdown)="startResize($event, fileBodyGrid)"
+            ></div>
+
+            <div class="file-source-panel">
+              <div class="file-panel-heading file-panel-heading-with-actions">
+                <span>Raw XSD Source</span>
+                <button class="tree-toolbar-btn" type="button" (click)="toggleWrapSourceLines()">
+                  {{ wrapSourceLines() ? 'Disable Wrap' : 'Enable Wrap' }}
+                </button>
+              </div>
+              <pre class="file-source-output" [class.wrap-disabled]="!wrapSourceLines()"><code class="language-markup" [innerHTML]="group.rawText | prismHighlight"></code></pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
